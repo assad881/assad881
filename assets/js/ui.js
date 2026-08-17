@@ -73,6 +73,35 @@
       return { close: close, body: body };
     },
 
+    /* Last-resort backup path when the host blocks file saves: show the JSON
+       so it can be copied out and pasted back in through Import. */
+    exportFallback(filename, text) {
+      const area = U.el('textarea', { rows: '10', readonly: 'readonly' });
+      area.value = text;
+      const body = U.el('div', {}, [
+        U.el('div', { class: 'notice warn', text: t('export_copy_hint') }),
+        area,
+        U.el('div', { class: 'row', style: { marginTop: '10px' } }, [
+          U.el('button', {
+            class: 'btn primary', text: t('export_copy'),
+            onclick: function () {
+              area.select();
+              const done = function () { UI.toast(t('export_copied'), 'good'); };
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(done, function () {
+                  try { document.execCommand('copy'); done(); } catch (e) { /* selection stays */ }
+                });
+              } else {
+                try { document.execCommand('copy'); done(); } catch (e) { /* selection stays */ }
+              }
+            }
+          }),
+          U.el('span', { class: 'tiny muted', text: filename })
+        ])
+      ]);
+      UI.modal({ title: t('export_data'), body: body, actions: false });
+    },
+
     confirm(message, onYes) {
       UI.modal({
         title: t('confirm'),

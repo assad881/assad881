@@ -142,13 +142,34 @@
       return Math.sqrt(U.sum(arr.map(function (x) { return (x - m) * (x - m); })) / (arr.length - 1));
     },
     last(arr, n) { return arr && arr.length ? arr[arr.length - 1 - (n || 0)] : undefined; },
-    download(filename, text, mime) {
+    anchorDownload(filename, text, mime) {
       const blob = new Blob([text], { type: mime || 'application/json;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = filename;
       document.body.appendChild(a); a.click();
       setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 100);
+    },
+
+    /* Saving a backup has to work in three places: a normal page (anchor),
+       a hosted viewer that mediates saves through a capability, and a hosted
+       viewer where saving is unavailable (fall back to copyable text). */
+    download(filename, text, mime) {
+      const host = root.claude;
+      if (!host || typeof host.use !== 'function') {
+        U.anchorDownload(filename, text, mime);
+        return;
+      }
+      Promise.resolve(host.use('downloads')).then(function (dl) {
+        if (!dl) return Promise.reject({ code: 'unavailable' });
+        return dl.save({ filename: filename, data: text });
+      }).then(function () {
+        if (AP.ui) AP.ui.toast(AP.t('export') + ' ✓', 'good');
+      }, function (err) {
+        if (err && err.code === 'declined') return;
+        if (AP.ui && AP.ui.exportFallback) AP.ui.exportFallback(filename, text);
+        else U.anchorDownload(filename, text, mime);
+      });
     }
   };
 
