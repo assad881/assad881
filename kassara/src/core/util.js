@@ -196,13 +196,37 @@ KX.util = (function () {
       return o;
     });
   }
-  function download(filename, content, mime) {
+  /* حفظ ملف للمستخدم.
+     في مضيف يمنع التنزيل المباشر (صفحة منشورة) يُستخدم مسار الحفظ المتاح؛
+     وفي الملف المحلي أو الخادم العادي يُستخدم رابط Blob. */
+  let _downloads;                       // undefined = لم يُفحص، null = غير متاح
+  async function saveHandler() {
+    if (_downloads !== undefined) return _downloads;
+    _downloads = null;
+    if (window.claude && typeof window.claude.use === 'function') {
+      try { _downloads = await window.claude.use('downloads'); } catch (e) { _downloads = null; }
+    }
+    return _downloads;
+  }
+  async function download(filename, content, mime) {
+    const cap = await saveHandler();
+    if (cap) {
+      try { await cap.save({ filename: filename, data: content }); return true; }
+      catch (err) {
+        if (err && err.code === 'declined') return false;
+        if (err && ['rate_limited', 'unavailable', 'not_granted'].indexOf(err.code) !== -1) {
+          toast('تعذّر حفظ الملف في هذا العرض', 'error'); return false;
+        }
+        /* أخطاء أخرى: جرّب المسار المحلي */
+      }
+    }
     const blob = new Blob([content], { type: (mime || 'text/plain') + ';charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = filename;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1500);
+    return true;
   }
 
   /* ---------- متفرقات ---------- */
