@@ -1,0 +1,43 @@
+{
+  "name": "كسّارة إكسبرس — مواد الكسارات إلى موقعك",
+  "short_name": "كسّارة إكسبرس",
+  "description": "منصة وسيطة لطلب مواد الكسارات وترتيب نقلها إلى مواقع العملاء في سلطنة عُمان.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f4f6f9",
+  "theme_color": "#0b2036",
+  "icons": [
+    {
+      "src": "assets/img/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "طلب جديد",
+      "url": "./index.html#/customer/new"
+    },
+    {
+      "name": "طلباتي",
+      "url": "./index.html#/customer/orders"
+    }
+  ]
+}

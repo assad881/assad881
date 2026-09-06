@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>كسّارة إكسبرس — مواد الكسارات إلى موقعك</title>
+  <meta name="description" content="منصة وسيطة لطلب مواد الكسارات وترتيب نقلها إلى مواقع العملاء في سلطنة عُمان — عبري ومحافظة الظاهرة.">
+  <meta name="theme-color" content="#0b2036">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="assets/css/app.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230b2036'/><text x='32' y='45' font-size='34' text-anchor='middle'>%F0%9F%AA%A8</text></svg>">
+</head>
+<body>
+  <div id="app">
+    <div style="padding:60px;text-align:center;font-family:system-ui;color:#7a8a9b">جارٍ التحميل…</div>
+  </div>
+
+  <noscript>
+    <div style="padding:24px;text-align:center;font-family:system-ui">
+      هذه المنصة تحتاج إلى تفعيل JavaScript في المتصفح.
+    </div>
+  </noscript>
+
+  <!-- الإعدادات -->
+  <script src="config/app.config.js"></script>
+
+  <!-- النواة -->
+  <script src="src/core/util.js"></script>
+  <script src="src/core/i18n.js"></script>
+  <script src="src/core/store.js"></script>
+  <script src="src/core/router.js"></script>
+
+  <!-- طبقة البيانات -->
+  <script src="src/data/schema.js"></script>
+  <script src="src/data/driver.local.js"></script>
+  <script src="src/data/driver.supabase.js"></script>
+  <script src="src/data/repo.js"></script>
+  <script src="src/core/audit.js"></script>
+  <script src="src/core/auth.js"></script>
+
+  <!-- منطق الأعمال -->
+  <script src="src/domain/notify.js"></script>
+  <script src="src/domain/pricing.js"></script>
+  <script src="src/domain/orders.js"></script>
+  <script src="src/domain/payments.js"></script>
+  <script src="src/domain/trips.js"></script>
+  <script src="src/domain/settlements.js"></script>
+  <script src="src/domain/analytics.js"></script>
+
+  <!-- البيانات التجريبية -->
+  <script src="src/data/seed.js"></script>
+
+  <!-- الواجهة -->
+  <script src="src/ui/components.js"></script>
+  <script src="src/ui/charts.js"></script>
+  <script src="src/ui/layout.js"></script>
+  <script src="src/ui/views/public.js"></script>
+  <script src="src/ui/views/auth.js"></script>
+  <script src="src/ui/views/customer.js"></script>
+  <script src="src/ui/views/admin.js"></script>
+  <script src="src/ui/views/admin-config.js"></script>
+  <script src="src/ui/views/partners.js"></script>
+
+  <!-- الاختبار الذاتي (اختياري: أضف ?selftest=1 إلى الرابط) -->
+  <script src="src/selftest.js"></script>
+
+  <!-- التشغيل -->
+  <script src="src/app.js"></script>
+</body>
+</html>
