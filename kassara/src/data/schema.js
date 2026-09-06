@@ -81,8 +81,9 @@ KX.schema = (function () {
   /* أنواع حسابات العملاء */
   const CUSTOMER_TYPES = { individual: 'فرد', contractor: 'مقاول', company: 'شركة' };
 
-  /* وحدات القياس */
-  const UNITS = { ton: 'طن', truck: 'شاحنة', m3: 'متر مكعب' };
+  /* وحدات القياس — المتر المكعب هو وحدة البيع الأساسية للكسارة */
+  const UNITS = { m3: 'م³', ton: 'طن', truck: 'شاحنة' };
+  const UNITS_FULL = { m3: 'متر مكعب', ton: 'طن', truck: 'شاحنة' };
 
-  return { BASE, TABLES, ROLES, PERMISSIONS, CUSTOMER_TYPES, UNITS };
+  return { BASE, TABLES, ROLES, PERMISSIONS, CUSTOMER_TYPES, UNITS, UNITS_FULL };
 })();

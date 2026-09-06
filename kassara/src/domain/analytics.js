@@ -24,7 +24,8 @@ KX.analytics = (function () {
     const done = (arr) => arr.filter((o) => o.status === DELIVERED);
 
     const val = (arr) => U().round(U().sum(arr, (o) => Number(o.total)), 3);
-    const tons = (arr) => U().round(U().sum(arr, (o) => Number(o.tons)), 1);
+    /* الكميات تُجمَع بوحدة الطلب؛ المنصة تبيع بالمتر المكعب */
+    const qty = (arr) => U().round(U().sum(arr, (o) => Number(o.quantity || 0)), 1);
     const revenue = (arr) => U().round(U().sum(arr, function (o) {
       const i = (o.price_snapshot || {}).internal || {};
       return Number(i.platform_revenue || o.platform_fee || 0);
@@ -49,8 +50,8 @@ KX.analytics = (function () {
       orders_count: cur.length,
       orders_delta: pct(cur.length, prev.length),
       orders_today: orders.filter((o) => o.created_at >= U().addDays(now.toISOString(), -1)).length,
-      tons_sold: tons(done(cur)),
-      tons_delta: pct(tons(done(cur)), tons(done(prev))),
+      qty_sold: qty(done(cur)),
+      qty_delta: pct(qty(done(cur)), qty(done(prev))),
       gross_value: val(cur),
       gross_delta: pct(val(cur), val(prev)),
       platform_revenue: revenue(done(cur)),
@@ -70,8 +71,8 @@ KX.analytics = (function () {
       suppliers_count: suppliers.filter((s) => s.is_active).length,
       carriers_count: carriers.filter((c) => c.is_active).length,
       trips_count: trips.length,
-      margin_per_ton: tons(done(cur)) > 0
-        ? U().round(revenue(done(cur)) / tons(done(cur)), 3) : 0,
+      margin_per_unit: qty(done(cur)) > 0
+        ? U().round(revenue(done(cur)) / qty(done(cur)), 3) : 0,
       from: from, to: now.toISOString(), orders: orders
     };
   }
@@ -84,26 +85,28 @@ KX.analytics = (function () {
       const key = d.toISOString().slice(0, 10);
       const rows = orders.filter((o) => String(o.created_at).slice(0, 10) === key);
       const v = metric === 'value' ? U().round(U().sum(rows, (o) => Number(o.total)), 3)
-              : metric === 'tons'  ? U().round(U().sum(rows, (o) => Number(o.tons)), 1)
+              : metric === 'qty'   ? U().round(U().sum(rows, (o) => Number(o.quantity || 0)), 1)
               : rows.length;
       out.push({
         label: d.toLocaleDateString('ar-OM-u-nu-latn', { day: 'numeric', month: 'short' }),
         value: v,
-        display: metric === 'value' ? U().fmtOMR(v) : metric === 'tons' ? U().fmtNum(v, 1) + ' طن' : v + ' طلب'
+        display: metric === 'value' ? U().fmtOMR(v)
+               : metric === 'qty'   ? U().fmtNum(v, 1) + ' ' + KX.schema.UNITS.m3 : v + ' طلب'
       });
     }
     return out;
   }
 
-  /* الأطنان حسب المادة */
+  /* الكميات المسلّمة حسب المادة */
   async function byMaterial(orders) {
     const items = await KX.repo.list('order_items', {});
     const ids = orders.filter((o) => o.status === DELIVERED).map((o) => o.id);
     const rows = items.filter((it) => ids.indexOf(it.order_id) !== -1);
     const g = U().groupBy(rows, 'material_name');
     return U().sortBy(Object.keys(g).map((k) => ({
-      label: k, value: U().round(U().sum(g[k], (x) => Number(x.tons)), 1)
-    })), 'value', 'desc').map((r) => Object.assign(r, { display: U().fmtNum(r.value, 1) + ' طن' }));
+      label: k, value: U().round(U().sum(g[k], (x) => Number(x.quantity || 0)), 1)
+    })), 'value', 'desc')
+      .map((r) => Object.assign(r, { display: U().fmtNum(r.value, 1) + ' ' + KX.schema.UNITS.m3 }));
   }
 
   /* الطلبات حسب المنطقة */
@@ -127,13 +130,13 @@ KX.analytics = (function () {
       return {
         id: s.id, name: s.name,
         orders: os.length, delivered: dl.length,
-        tons: U().round(U().sum(dl, (o) => Number(o.tons)), 1),
+        quantity: U().round(U().sum(dl, (o) => Number(o.quantity || 0)), 1),
         value: U().round(U().sum(dl, (o) => Number(o.material_cost)), 3),
         cancelled: os.filter((o) => o.status === 'cancelled').length,
         rating: rv.length ? U().round(U().sum(rv, (r) => Number(r.supplier_rating)) / rv.length, 1) : s.rating,
         fulfillment: os.length ? U().round((dl.length / os.length) * 100, 0) : 0
       };
-    }), 'tons', 'desc');
+    }), 'quantity', 'desc');
   }
 
   /* أداء الناقلين */

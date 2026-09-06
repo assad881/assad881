@@ -23,7 +23,8 @@ create type kx_trip_status     as enum (
 create type kx_payment_method  as enum ('card','bank_transfer','deposit','credit_terms');
 create type kx_payment_status  as enum ('pending_verification','captured','rejected','voided');
 create type kx_party_type      as enum ('supplier','transporter');
-create type kx_unit            as enum ('ton','truck','m3');
+-- وحدة البيع: المتر المكعب هو الأساس في قائمة أسعار الكسارة
+create type kx_unit            as enum ('m3','ton','truck');
 create type kx_discount_type   as enum ('percent','fixed');
 
 -- ---------- المستخدمون ----------
@@ -32,6 +33,7 @@ create table users (
   auth_uid      uuid unique,                       -- الربط مع auth.users في Supabase
   name          text not null,
   phone         text not null unique check (phone ~ '^968[0-9]{8}$'),
+  -- ar | en | ur | hi | bn — لغة واجهة المستخدم المحفوظة في حسابه
   email         text,
   role          kx_role not null default 'customer',
   account_status kx_account_status not null default 'active',
@@ -50,6 +52,9 @@ create table customer_profiles (
   phone           text not null,
   customer_type   kx_customer_type not null default 'individual',
   company_name    text, cr_number text, vat_number text,
+  lang            text not null default 'ar',
+  -- اعتماد الإدارة لعرض الأسعار الخاصة لهذا العميل
+  special_pricing_approved boolean not null default false,
   credit_approved boolean not null default false,
   credit_limit    numeric(12,3) not null default 0 check (credit_limit >= 0),
   credit_used     numeric(12,3) not null default 0 check (credit_used  >= 0),
@@ -87,7 +92,7 @@ create index on locations (customer_id);
 -- ---------- المواد ----------
 create table material_categories (
   id uuid primary key default gen_random_uuid(),
-  code text not null unique, name text not null, icon text, sort integer default 0,
+  code text not null unique, name text not null, name_en text, icon text, sort integer default 0,
   created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
   created_by uuid, status_flag kx_record_flag not null default 'active'
 );
@@ -95,8 +100,12 @@ create table material_categories (
 create table materials (
   id uuid primary key default gen_random_uuid(),
   category_id uuid not null references material_categories(id),
-  code text not null unique, name text not null, description text,
-  unit kx_unit not null default 'ton', density numeric(5,2),
+  sku  text not null unique,                  -- المعرّف الثابت؛ لا يُستخدم الاسم المترجم معرّفًا
+  name text not null,                         -- الاسم العربي (اللغة الأساسية)
+  name_i18n jsonb not null default '{}'::jsonb,   -- {ar,en,ur,hi,bn} من الجدول المعتمد
+  size text,                                  -- المقاس منفصل عن الاسم لتقليل أخطاء الترجمة
+  description text,
+  unit kx_unit not null default 'm3', density numeric(5,2),
   is_active boolean not null default true,
   created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
   created_by uuid, status_flag kx_record_flag not null default 'active'
@@ -109,7 +118,9 @@ create table suppliers (
   code text not null unique, name text not null,
   cr_number text, phone text, address text,
   wilayat text, governorate text, location jsonb,
-  loading_capacity_tons_day integer, working_hours text,
+  name_en text,
+  loading_capacity_per_day integer, unit kx_unit not null default 'm3',
+  working_hours text,
   rating numeric(2,1) default 0,
   is_approved boolean not null default false, is_active boolean not null default true,
   created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
@@ -120,13 +131,21 @@ create table supplier_prices (
   id uuid primary key default gen_random_uuid(),
   supplier_id uuid not null references suppliers(id) on delete restrict,
   material_id uuid not null references materials(id) on delete restrict,
-  customer_id uuid references customer_profiles(id),   -- NULL = سعر قائمة عام
-  price_per_ton numeric(10,3) not null check (price_per_ton > 0),
+  customer_id uuid references customer_profiles(id),   -- NULL = ليس سعرًا تعاقديًا لعميل بعينه
+  price_per_unit numeric(10,3) not null check (price_per_unit > 0),
+  unit kx_unit not null default 'm3',
   currency char(3) not null default 'OMR',
-  min_qty_tons numeric(10,2) default 0,
-  max_qty_tons numeric(10,2),
-  available_tons_per_day numeric(10,2) default 0,
-  tiers jsonb not null default '[]'::jsonb,            -- [{min_qty, price_per_ton}]
+  min_qty numeric(10,2) default 0,                     -- الحد الأدنى للتوصيل (شاحنة واحدة)
+  max_qty numeric(10,2),
+  available_per_day numeric(10,2) default 0,
+  tiers jsonb not null default '[]'::jsonb,            -- [{min_qty, price_per_unit}]
+  -- القائمة الرسمية: السعر من باب الكسارة، والنقل والضريبة بندان مستقلان
+  includes_transport boolean not null default false,
+  includes_vat       boolean not null default false,
+  -- السعر الخاص لا يُعرض علنًا: يُستحق باعتماد العميل أو بكود مصرّح
+  is_special boolean not null default false,
+  unlock_code text,
+  source text,
   valid_from timestamptz not null default now(),
   valid_to   timestamptz,
   note text,
@@ -140,7 +159,11 @@ create index on supplier_prices (supplier_id, material_id, is_active);
 -- سعر قائمة واحد ساري لكل (مورد، مادة) في وقت واحد
 create unique index supplier_prices_one_active_list
   on supplier_prices (supplier_id, material_id)
-  where customer_id is null and is_active and valid_to is null;
+  where customer_id is null and not is_special and is_active and valid_to is null;
+-- سعر خاص عام واحد لكل (مورد، مادة)
+create unique index supplier_prices_one_active_special
+  on supplier_prices (supplier_id, material_id)
+  where customer_id is null and is_special and is_active and valid_to is null;
 
 -- سجل الأسعار: لا يُحدَّث ولا يُحذف
 create table price_history (
@@ -168,9 +191,10 @@ create table transport_companies (
 
 create table truck_types (
   id uuid primary key default gen_random_uuid(),
-  code text not null unique, name text not null,
-  capacity_tons numeric(6,2) not null check (capacity_tons > 0),
-  axles integer, is_active boolean not null default true,
+  code text not null unique, name text not null, name_en text,
+  capacity_m3   numeric(6,2) not null check (capacity_m3 > 0),
+  capacity_tons numeric(6,2) check (capacity_tons > 0),
+  axles integer, is_active boolean not null default true, note text,
   created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
   created_by uuid, status_flag kx_record_flag not null default 'active'
 );
@@ -180,7 +204,8 @@ create table trucks (
   transporter_id uuid not null references transport_companies(id) on delete restrict,
   truck_type_id  uuid not null references truck_types(id),
   plate_no text not null, make text, year integer,
-  capacity_tons numeric(6,2) not null,
+  capacity_m3   numeric(6,2) not null,
+  capacity_tons numeric(6,2),
   is_available boolean not null default true,
   created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
   created_by uuid, status_flag kx_record_flag not null default 'active',
@@ -226,7 +251,8 @@ create table orders (
   status kx_order_status not null default 'draft',
   scheduled_at timestamptz, delivered_at timestamptz, cancelled_at timestamptz,
   cancel_reason text, notes text,
-  tons numeric(10,2) not null check (tons > 0),
+  quantity numeric(10,2) not null check (quantity > 0),
+  unit kx_unit not null default 'm3',   -- وحدة واحدة لكل طلب؛ لا تُخلط م³ مع الطن
   trips_planned integer not null check (trips_planned > 0),
   trips_done integer not null default 0,
   price_snapshot jsonb not null,                      -- لقطة السعر وقت الإنشاء
@@ -257,10 +283,11 @@ create table order_items (
   id uuid primary key default gen_random_uuid(),
   order_id uuid not null references orders(id) on delete restrict,
   material_id uuid not null references materials(id),
-  material_name text not null,
-  unit kx_unit not null default 'ton',
-  quantity numeric(10,2) not null, tons numeric(10,2) not null,
-  unit_price_per_ton numeric(10,3) not null, line_total numeric(12,3) not null,
+  material_sku text, material_name text not null,
+  unit kx_unit not null default 'm3',
+  order_by text not null default 'unit',      -- unit | truck (طريقة إدخال العميل)
+  quantity numeric(10,2) not null,
+  unit_price numeric(10,3) not null, line_total numeric(12,3) not null,
   created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
   created_by uuid, status_flag kx_record_flag not null default 'active'
 );
@@ -339,7 +366,8 @@ create table commissions (
   supplier_commission numeric(12,3) not null default 0,
   transporter_commission numeric(12,3) not null default 0,
   total_revenue numeric(12,3) not null,
-  tons numeric(10,2), margin_per_ton numeric(10,3),
+  quantity numeric(10,2), unit kx_unit not null default 'm3',
+  margin_per_unit numeric(10,3),
   recognized_at timestamptz not null default now(),
   created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
   created_by uuid, status_flag kx_record_flag not null default 'active'
@@ -356,7 +384,8 @@ create table trips (
   supplier_id uuid references suppliers(id),
   site_id uuid references locations(id),
   status kx_trip_status not null default 'assigned',
-  planned_tons numeric(10,2), actual_tons numeric(10,2),
+  unit kx_unit not null default 'm3',
+  planned_qty numeric(10,2), actual_qty numeric(10,2),
   weight_ticket_id uuid,
   waiting_minutes integer not null default 0,
   waiting_fee numeric(10,3) not null default 0,
@@ -375,12 +404,15 @@ create table weight_tickets (
   trip_id uuid not null references trips(id), order_id uuid not null references orders(id),
   supplier_id uuid references suppliers(id),
   ticket_no text not null,
-  gross_tons numeric(10,2) not null, tare_tons numeric(10,2) not null,
-  net_tons numeric(10,2) not null check (net_tons > 0),
+  unit kx_unit not null default 'm3',
+  net_qty numeric(10,2) not null check (net_qty > 0),   -- الكمية الفعلية بوحدة الطلب
+  -- الوزن القائم والفارغ اختياريان: يُملآن حين يوجد ميزان جسري
+  gross_tons numeric(10,2), tare_tons numeric(10,2),
   image_url text, recorded_at timestamptz not null default now(),
   created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
   created_by uuid, status_flag kx_record_flag not null default 'active',
-  constraint gross_over_tare check (gross_tons > tare_tons)
+  constraint gross_over_tare check (gross_tons is null or tare_tons is null
+                                    or gross_tons > tare_tons)
 );
 
 -- ---------- التفاعل ----------

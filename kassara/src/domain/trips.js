@@ -33,8 +33,9 @@ KX.trips = (function () {
         driver_id: null, truck_id: opts.truck_id || order.truck_id || null,
         supplier_id: order.supplier_id, site_id: order.site_id,
         status: 'assigned',
-        planned_tons: U().round(order.tons / order.trips_planned, 3),
-        actual_tons: null,
+        unit: order.unit,
+        planned_qty: U().round(order.quantity / order.trips_planned, 3),
+        actual_qty: null,
         waiting_minutes: 0, waiting_fee: 0, waiting_approved: false,
         photos: [], timeline: [{ at: U().nowISO(), status: 'assigned' }]
       }));
@@ -86,14 +87,22 @@ KX.trips = (function () {
   async function recordWeightTicket(tripId, data) {
     const t = await KX.repo.get('trips', tripId);
     if (!t) throw new Error('الرحلة غير موجودة');
+    /* الكمية الفعلية المحمّلة بوحدة الطلب (م³ أو طن).
+       الوزن القائم والفارغ اختياريان — يُملآن حين يوجد ميزان جسري. */
+    const net = data.net_qty !== undefined && data.net_qty !== ''
+      ? U().round(Number(data.net_qty), 3)
+      : U().round(Number(data.gross_tons) - Number(data.tare_tons), 3);
+    if (!(net > 0)) throw new Error('الكمية الفعلية غير صحيحة');
     const wt = await KX.repo.insert('weight_tickets', {
       trip_id: tripId, order_id: t.order_id, supplier_id: t.supplier_id,
-      ticket_no: data.ticket_no, gross_tons: data.gross_tons, tare_tons: data.tare_tons,
-      net_tons: U().round(Number(data.gross_tons) - Number(data.tare_tons), 3),
+      ticket_no: data.ticket_no, unit: t.unit || 'm3',
+      gross_tons: data.gross_tons ? Number(data.gross_tons) : null,
+      tare_tons: data.tare_tons ? Number(data.tare_tons) : null,
+      net_qty: net,
       image_url: data.image_url || null, recorded_at: U().nowISO()
     });
-    await KX.repo.update('trips', tripId, { actual_tons: wt.net_tons, weight_ticket_id: wt.id });
-    await KX.audit.log('weight_ticket.create', 'weight_tickets', wt.id, { trip_id: tripId, net: wt.net_tons });
+    await KX.repo.update('trips', tripId, { actual_qty: wt.net_qty, weight_ticket_id: wt.id });
+    await KX.audit.log('weight_ticket.create', 'weight_tickets', wt.id, { trip_id: tripId, net: wt.net_qty });
     return wt;
   }
 

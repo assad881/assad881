@@ -116,7 +116,8 @@ KX.orders = (function () {
         status: 'draft',
         scheduled_at: ctx.scheduled_at,
         notes: ctx.notes || '',
-        tons: quote.quantities.tons,
+        quantity: quote.quantities.quantity,
+        unit: quote.quantities.unit,
         trips_planned: quote.quantities.trips,
         trips_done: 0,
         /* لقطة السعر — لا تتغيّر بتغيّر قائمة الأسعار لاحقًا */
@@ -137,11 +138,13 @@ KX.orders = (function () {
       await KX.repo.insert('order_items', {
         order_id: order.id,
         material_id: quote.inputs.material_id,
-        material_name: quote.inputs.material_name,
-        unit: quote.inputs.unit,
-        quantity: quote.inputs.quantity,
-        tons: quote.quantities.tons,
-        unit_price_per_ton: quote.lines.unit_price_per_ton,
+        material_sku: quote.inputs.material_sku,
+        material_name: quote.inputs.material_name_ar,
+        material_name_i18n: quote.inputs.material_name_i18n || null,
+        unit: quote.quantities.unit,
+        order_by: quote.inputs.order_by,
+        quantity: quote.quantities.quantity,
+        unit_price: quote.lines.unit_price,
         line_total: quote.lines.material_cost
       });
       await KX.repo.insert('quotations', {

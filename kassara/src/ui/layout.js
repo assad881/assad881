@@ -14,17 +14,18 @@ KX.layout = (function () {
   ];
 
   const SIDEBARS = {
+    /* شاشات العميل وحدها تتبع لغة المستخدم — لوحات التشغيل والإدارة بالعربية */
     customer: [
-      { group: 'طلباتي' },
-      { path: '/customer',            label: 'لوحة المتابعة', icon: '📊' },
-      { path: '/customer/new',        label: 'طلب جديد',      icon: '➕' },
-      { path: '/customer/orders',     label: 'الطلبات',       icon: '📦' },
-      { path: '/customer/invoices',   label: 'الفواتير',      icon: '🧾' },
-      { group: 'حسابي' },
-      { path: '/customer/sites',      label: 'مواقع المشاريع', icon: '📍' },
-      { path: '/customer/profile',    label: 'الملف الشخصي',  icon: '👤' },
-      { path: '/customer/complaints', label: 'الشكاوى والتقييمات', icon: '💬' },
-      { path: '/notifications',       label: 'الإشعارات',     icon: '🔔' }
+      { group: 'طلباتي', key: 'orders' },
+      { path: '/customer',            key: 'dashboard',     icon: '📊' },
+      { path: '/customer/new',        key: 'new_order',     icon: '➕' },
+      { path: '/customer/orders',     key: 'orders',        icon: '📦' },
+      { path: '/customer/invoices',   key: 'invoice',       icon: '🧾' },
+      { group: 'حسابي', key: 'profile' },
+      { path: '/customer/sites',      key: 'sites',         icon: '📍' },
+      { path: '/customer/profile',    key: 'profile',       icon: '👤' },
+      { path: '/customer/complaints', key: 'contact_support', icon: '💬' },
+      { path: '/notifications',       key: 'notifications', icon: '🔔' }
     ],
     supplier: [
       { group: 'التشغيل' },
@@ -86,10 +87,19 @@ KX.layout = (function () {
       ? '<a href="#' + KX.auth.homeFor(s.role) + '" class="' + (cur.indexOf(KX.auth.homeFor(s.role)) === 0 ? 'is-active' : '') + '">' +
         '👤 ' + e(s.name) + '</a><a href="#/logout">خروج</a>'
       : '<a href="#/login" class="btn btn--primary btn--sm" style="color:#fff">تسجيل الدخول</a>';
+    /* مبدّل اللغة — الأسماء بلغتها الأصلية حتى يعرفها من لا يقرأ العربية */
+    const langSel = '<select class="lang-pick" id="kx-lang" aria-label="' +
+      e(KX.i18n.t('change_language')) + '">' +
+      KX.i18n.available().map(function (l) {
+        const m = KX.i18n.meta(l);
+        return '<option value="' + l + '"' + (l === KX.i18n.getLang() ? ' selected' : '') + '>' +
+               e(m.native) + '</option>';
+      }).join('') + '</select>';
+
     return '<header class="appbar"><div class="appbar__inner">' +
       '<a href="#/" class="brand"><span class="brand__mark">🪨</span><span>' + e(KX.config.brand.name) + '</span></a>' +
       '<button class="appbar__burger" id="kx-burger" aria-label="القائمة">☰</button>' +
-      '<nav class="appbar__nav" id="kx-nav">' + nav + right + '</nav>' +
+      '<nav class="appbar__nav" id="kx-nav">' + nav + langSel + right + '</nav>' +
       '</div></header>' +
       (KX.config.demo.enabled ? '<div class="demo-bar">⚠️ ' + e(KX.config.demo.banner) + '</div>' : '');
   }
@@ -124,12 +134,14 @@ KX.layout = (function () {
     /* المسار النشط هو أطول مسار مطابق حتى لا يُضاء القسم وابنه معًا */
     const matches = items.filter((it) => it.path && (cur === it.path || cur.indexOf(it.path + '/') === 0));
     const best = matches.sort((a, b) => b.path.length - a.path.length)[0];
+    /* label المكتوب صراحةً يفوز؛ وإلا يُترجم key بسلسلة الرجوع المعتمدة */
+    const text = (it) => it.label || (it.key ? KX.i18n.t(it.key) : '');
     return '<aside class="sidebar">' + items.map(function (it) {
-      if (it.group) return '<div class="sidebar__group">' + e(it.group) + '</div>';
+      if (it.group) return '<div class="sidebar__group">' + e(text(it) || it.group) + '</div>';
       const active = best && it.path === best.path;
       const c = counts && counts[it.path];
       return '<a href="#' + it.path + '" class="' + (active ? 'is-active' : '') + '">' +
-        '<span>' + it.icon + '</span><span>' + e(it.label) + '</span>' +
+        '<span>' + it.icon + '</span><span>' + e(text(it)) + '</span>' +
         (c ? '<span class="count">' + c + '</span>' : '') + '</a>';
     }).join('') + '</aside>';
   }
@@ -162,6 +174,8 @@ KX.layout = (function () {
   function bindChrome() {
     const burger = document.getElementById('kx-burger');
     if (burger) burger.onclick = () => document.getElementById('kx-nav').classList.toggle('is-open');
+    const lang = document.getElementById('kx-lang');
+    if (lang) lang.onchange = function () { KX.i18n.setLang(this.value); KX.router.resolve(); };
   }
 
   return { renderPublic, renderApp, appbar, footer, sidebar, PUBLIC_NAV, SIDEBARS };

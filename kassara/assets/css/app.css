@@ -47,8 +47,12 @@
 html,body{margin:0;padding:0}
 body{
   font-family:var(--font); background:var(--bg); color:var(--text);
-  font-size:15px; line-height:1.65; -webkit-font-smoothing:antialiased;
+  font-size:15px; line-height:var(--line-height,1.65); -webkit-font-smoothing:antialiased;
 }
+/* النستعليق الأردي يحتاج ارتفاع سطر أكبر ولا يُستبدل بخط ديفاناغاري أو العكس */
+:root[data-lang="ur"] body{font-size:16px}
+:root[data-lang="ur"] .table td,:root[data-lang="ur"] .table th{padding-block:14px}
+:root[data-lang="hi"] body,:root[data-lang="bn"] body{font-size:14.5px}
 h1,h2,h3,h4{margin:0 0 .5rem; line-height:1.35; font-weight:800; letter-spacing:-.01em}
 h1{font-size:1.75rem} h2{font-size:1.3rem} h3{font-size:1.08rem} h4{font-size:.98rem}
 p{margin:0 0 .75rem; color:var(--text-2)}
@@ -98,6 +102,13 @@ small{font-size:.82rem}
 .appbar__nav a.is-active{background:rgba(255,255,255,.14); color:#fff;
   box-shadow:inset 0 -2px 0 var(--orange-500)}
 .appbar__burger{display:none; background:none;border:0;color:#fff;font-size:1.5rem;cursor:pointer;padding:4px 8px}
+.lang-pick{
+  background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.22);
+  border-radius:9px; padding:7px 10px; font-family:var(--font); font-size:.85rem;
+  font-weight:600; cursor:pointer; margin-inline:6px;
+}
+.lang-pick option{color:var(--text); background:var(--surface)}
+.lang-pick:focus{outline:2px solid var(--orange-400); outline-offset:1px}
 @media (max-width:900px){
   .appbar__burger{display:block; margin-inline-start:auto}
   .appbar__nav{

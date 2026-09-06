@@ -91,10 +91,10 @@ begin
           o.transport_cost + o.waiting_fees - car_comm, now() + interval '14 days');
 
   insert into commissions (order_id, order_no, platform_fee, supplier_commission, transporter_commission,
-                           total_revenue, tons, margin_per_ton)
+                           total_revenue, quantity, margin_per_unit)
   values (o.id, o.order_no, o.platform_fee, sup_comm, car_comm,
-          o.platform_fee + sup_comm + car_comm, o.tons,
-          (o.platform_fee + sup_comm + car_comm) / nullif(o.tons, 0));
+          o.platform_fee + sup_comm + car_comm, o.quantity,
+          (o.platform_fee + sup_comm + car_comm) / nullif(o.quantity, 0));
 end $$;
 
 -- تأكيد الاستلام برمز OTP

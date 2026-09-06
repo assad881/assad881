@@ -30,13 +30,14 @@ KX.selftest = (function () {
     const savedSession = KX.store.get('session');
     await KX.seed.run(true);
 
-    const [sup, mat, truck, zone, cust, site] = await Promise.all([
-      KX.repo.first('suppliers', { code: 'SUP-WD' }),
-      KX.repo.first('materials', { code: 'BASE' }),
-      KX.repo.first('truck_types', { code: 'TIP25' }),
+    const [sup, mat, sand, truck, truckBig, zone, cust] = await Promise.all([
+      KX.repo.first('suppliers', { code: 'WAEDA' }),
+      KX.repo.first('materials', { sku: 'BASE-ABC-0020' }),   // طبقة أساس ABC — 2.200 ر.ع/م³
+      KX.repo.first('materials', { sku: 'SAND-NORMAL-05' }),  // رمل عادي — عام 1.900 وخاص 1.600
+      KX.repo.first('truck_types', { code: 'TIP18' }),        // 18 م³ = الحد الأدنى
+      KX.repo.first('truck_types', { code: 'TRL24' }),
       KX.repo.first('delivery_zones', { code: 'IBR-C' }),
-      KX.repo.first('customer_profiles', { phone: '96890000001' }),
-      null
+      KX.repo.first('customer_profiles', { phone: '96890000001' })
     ]);
     const sites = await KX.repo.list('locations', { where: { customer_id: cust.id } });
     const theSite = sites[0];
@@ -46,13 +47,22 @@ KX.selftest = (function () {
     let quote;
     await t('حساب عرض سعر صحيح', async function () {
       quote = await KX.pricing.quote({
-        supplier_id: sup.id, material_id: mat.id, quantity: 50, unit: 'ton',
+        supplier_id: sup.id, material_id: mat.id, quantity: 36, order_by: 'unit',
         truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords, customer_id: cust.id
       });
       assert(quote.ok, 'العرض غير صالح: ' + (quote.errors || []).join(', '));
     });
-    await t('عدد الرحلات = تقريب لأعلى للكمية ÷ الحمولة', function () {
-      assert(quote.quantities.trips === Math.ceil(50 / 25), 'عدد الرحلات خاطئ');
+    await t('وحدة البيع متر مكعب لا طن', function () {
+      assert(quote.quantities.unit === 'm3', 'الوحدة: ' + quote.quantities.unit);
+      assert(quote.inputs.unit_label === 'م³', 'التسمية: ' + quote.inputs.unit_label);
+    });
+    await t('سعر الوحدة يطابق القائمة الرسمية (طبقة أساس ABC = 2.200)', function () {
+      near(quote.lines.unit_price, 2.200);
+      near(quote.lines.material_cost, 36 * 2.200);
+    });
+    await t('عدد الرحلات = تقريب لأعلى للكمية ÷ حمولة الشاحنة', function () {
+      assert(quote.quantities.capacity === 18, 'الحمولة: ' + quote.quantities.capacity);
+      assert(quote.quantities.trips === Math.ceil(36 / 18), 'عدد الرحلات خاطئ');
     });
     await t('معادلة السعر: مواد + نقل + رسوم − خصم + ضريبة', function () {
       const L = quote.lines;
@@ -62,37 +72,73 @@ KX.selftest = (function () {
       near(L.vat, (sub - L.discount) * L.vat_rate);
       near(quote.totals.total, (sub - L.discount) + L.vat);
     });
-    await t('الطلب بعدد الشاحنات يساوي الكمية × الحمولة', async function () {
+    await t('الطلب بعدد الشاحنات يساوي العدد × حمولة الشاحنة', async function () {
       const q2 = await KX.pricing.quote({
-        supplier_id: sup.id, material_id: mat.id, quantity: 2, unit: 'truck',
+        supplier_id: sup.id, material_id: mat.id, quantity: 2, order_by: 'truck',
         truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords, customer_id: cust.id
       });
-      assert(q2.quantities.tons === 50 && q2.quantities.trips === 2, 'تحويل الشاحنات إلى أطنان خاطئ');
+      assert(q2.quantities.quantity === 36 && q2.quantities.trips === 2, 'تحويل الشاحنات إلى م³ خاطئ');
     });
-    await t('شريحة الكمية تخفض سعر الطن', async function () {
-      const small = await KX.pricing.quote({ supplier_id: sup.id, material_id: mat.id, quantity: 30,
-        unit: 'ton', truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords, customer_id: cust.id });
-      const big = await KX.pricing.quote({ supplier_id: sup.id, material_id: mat.id, quantity: 600,
-        unit: 'ton', truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords, customer_id: cust.id });
-      assert(big.lines.unit_price_per_ton < small.lines.unit_price_per_ton, 'الشريحة لم تُطبَّق');
+    await t('حمولة كل نوع شاحنة تُقرأ بالمتر المكعب', async function () {
+      const q3 = await KX.pricing.quote({
+        supplier_id: sup.id, material_id: mat.id, quantity: 48, order_by: 'unit',
+        truck_type_id: truckBig.id, zone_id: zone.id, site: theSite.coords, customer_id: cust.id
+      });
+      assert(q3.quantities.capacity === 24 && q3.quantities.trips === 2, 'حمولة التريلة خاطئة');
     });
-    await t('رفض الكمية دون الحد الأدنى', async function () {
-      const q = await KX.pricing.quote({ supplier_id: sup.id, material_id: mat.id, quantity: 1,
-        unit: 'ton', truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords, customer_id: cust.id });
-      assert(!q.ok, 'كان يجب رفض الكمية الصغيرة');
+    await t('رفض الكمية دون الحد الأدنى للتوصيل (18 م³)', async function () {
+      const q = await KX.pricing.quote({ supplier_id: sup.id, material_id: mat.id, quantity: 6,
+        order_by: 'unit', truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords, customer_id: cust.id });
+      assert(!q.ok, 'كان يجب رفض الكمية دون الحد الأدنى');
+      assert(q.errors.join(' ').indexOf('الحد الأدنى') !== -1, q.errors.join(' '));
+    });
+    await t('شاحنة واحدة (18 م³) مقبولة كحد أدنى', async function () {
+      const q = await KX.pricing.quote({ supplier_id: sup.id, material_id: mat.id, quantity: 18,
+        order_by: 'unit', truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords, customer_id: cust.id });
+      assert(q.ok, q.errors.join(' '));
+      assert(q.quantities.trips === 1, 'الرحلات: ' + q.quantities.trips);
     });
     await t('الكوبون يخصم ضمن حده الأقصى', async function () {
-      const q = await KX.pricing.quote({ supplier_id: sup.id, material_id: mat.id, quantity: 100,
-        unit: 'ton', truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords,
+      const q = await KX.pricing.quote({ supplier_id: sup.id, material_id: mat.id, quantity: 72,
+        order_by: 'unit', truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords,
         customer_id: cust.id, coupon_code: 'WELCOME10' });
       assert(q.lines.discount > 0 && q.lines.discount <= 15, 'الخصم خارج الحدود');
     });
-    await t('السعر التعاقدي للعميل يتقدّم على سعر القائمة', async function () {
+    await t('السعر الخاص لا يُعرض لعميل غير معتمد', async function () {
+      const q = await KX.pricing.quote({ supplier_id: sup.id, material_id: sand.id, quantity: 18,
+        order_by: 'unit', truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords,
+        customer_id: cust.id });
+      assert(!q.inputs.is_special_price, 'سُرّب السعر الخاص');
+      near(q.lines.unit_price, 1.900);
+    });
+    await t('العميل المعتمد يحصل على السعر الخاص تلقائيًا', async function () {
       const company = await KX.repo.first('customer_profiles', { phone: '96890000002' });
-      const q = await KX.pricing.quote({ supplier_id: sup.id, material_id: mat.id, quantity: 100,
-        unit: 'ton', truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords, customer_id: company.id });
-      assert(q.inputs.is_special_price, 'لم يُستخدم السعر التعاقدي');
-      near(q.lines.unit_price_per_ton, 1.200);
+      assert(company.special_pricing_approved, 'الحساب غير معتمد في البيانات');
+      const q = await KX.pricing.quote({ supplier_id: sup.id, material_id: sand.id, quantity: 18,
+        order_by: 'unit', truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords,
+        customer_id: company.id });
+      assert(q.inputs.is_special_price, 'لم يُطبَّق السعر الخاص');
+      near(q.lines.unit_price, 1.600);
+    });
+    await t('كود السعر الخاص يفتحه لعميل غير معتمد', async function () {
+      const q = await KX.pricing.quote({ supplier_id: sup.id, material_id: sand.id, quantity: 18,
+        order_by: 'unit', truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords,
+        customer_id: cust.id, unlock_code: 'WAEDA-SP' });
+      assert(q.inputs.is_special_price, 'الكود لم يفتح السعر الخاص');
+      near(q.lines.unit_price, 1.600);
+    });
+    await t('كود خاطئ لا يفتح السعر الخاص', async function () {
+      const q = await KX.pricing.quote({ supplier_id: sup.id, material_id: sand.id, quantity: 18,
+        order_by: 'unit', truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords,
+        customer_id: cust.id, unlock_code: 'WRONG' });
+      assert(!q.inputs.is_special_price, 'كود خاطئ فتح السعر الخاص');
+      near(q.lines.unit_price, 1.900);
+    });
+    await t('النقل والضريبة بندان مستقلان لا يُدمجان في سعر المادة', function () {
+      const L = quote.lines;
+      near(L.material_cost, quote.quantities.quantity * L.unit_price);
+      assert(L.transport_cost > 0, 'لم تُحتسب تكلفة النقل');
+      assert(L.vat > 0, 'لم تُحتسب الضريبة');
     });
     await t('توزيع المستحقات يساوي قيمة المواد والنقل', function () {
       const i = quote.internal, L = quote.lines;
@@ -188,8 +234,9 @@ KX.selftest = (function () {
     });
     await t('تذكرة الميزان تسجّل الكمية الفعلية', async function () {
       const wt = await KX.trips.recordWeightTicket(trips[0].id,
-        { ticket_no: 'WT-001', gross_tons: 40.5, tare_tons: 15.5 });
-      near(wt.net_tons, 25);
+        { ticket_no: 'WT-001', net_qty: 18 });
+      near(wt.net_qty, 18);
+      assert(wt.unit === 'm3', 'وحدة التذكرة: ' + wt.unit);
     });
     await t('تقدّم الرحلة يحرّك حالة الطلب', async function () {
       await KX.trips.updateStatus(trips[0].id, 'loading');
@@ -235,7 +282,7 @@ KX.selftest = (function () {
     await t('إلغاء بعد الدفع يسترد كامل المبلغ', async function () {
       asRole('customer', { customer_id: cust.id });
       const q = await KX.pricing.quote({ supplier_id: sup.id, material_id: mat.id, quantity: 30,
-        unit: 'ton', truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords, customer_id: cust.id });
+        order_by: 'unit', truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords, customer_id: cust.id });
       let o = await KX.orders.createFromQuote(q, { customer_id: cust.id, site_id: theSite.id,
         scheduled_at: KX.util.addDays(KX.util.nowISO(), 1) });
       o = await KX.orders.transition(o.id, 'under_review', { role: 'customer' });
@@ -252,7 +299,7 @@ KX.selftest = (function () {
     });
     await t('لا استرداد بلا مدفوعات', async function () {
       const q = await KX.pricing.quote({ supplier_id: sup.id, material_id: mat.id, quantity: 30,
-        unit: 'ton', truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords, customer_id: cust.id });
+        order_by: 'unit', truck_type_id: truck.id, zone_id: zone.id, site: theSite.coords, customer_id: cust.id });
       const o = await KX.orders.createFromQuote(q, { customer_id: cust.id, site_id: theSite.id,
         scheduled_at: KX.util.nowISO() });
       await throws(() => KX.payments.refund(o.id, { reason: 'x' }), 'لا توجد مبالغ مدفوعة');
@@ -318,10 +365,10 @@ KX.selftest = (function () {
     await t('تعديل السعر لا يغيّر الطلبات السابقة', async function () {
       const before = await KX.repo.get('orders', order.id);
       const priceRow = await KX.repo.first('supplier_prices', { supplier_id: sup.id, material_id: mat.id });
-      await KX.repo.update('supplier_prices', priceRow.id, { price_per_ton: 9.999 });
+      await KX.repo.update('supplier_prices', priceRow.id, { price_per_unit: 9.999 });
       const after = await KX.repo.get('orders', order.id);
       near(after.total, before.total);
-      await KX.repo.update('supplier_prices', priceRow.id, { price_per_ton: priceRow.price_per_ton });
+      await KX.repo.update('supplier_prices', priceRow.id, { price_per_unit: priceRow.price_per_unit });
     });
     await t('كل طلب مرتبط بعميل وموقع ومورد', async function () {
       const all = await KX.repo.list('orders', {});
@@ -334,11 +381,90 @@ KX.selftest = (function () {
         assert(KX.schema.TABLES[t2].label, 'جدول بلا تسمية: ' + t2));
     });
 
+    /* ---------- 8ب) مطابقة قائمة الأسعار الرسمية ---------- */
+    group('قائمة الأسعار الرسمية');
+    const OFFICIAL = [
+      ['SAND-NORMAL-05', 1.900], ['SAND-PLASTER-02', 2.900], ['SAND-BLOCK-316', 1.900],
+      ['AGG-CRUSH-038', 1.900],  ['AGG-CRUSH-034', 2.400],   ['BASE-ABC-0020', 2.200],
+      ['FILL-WADI', 0.650],      ['FILL-WADI-SCR', 1.100],   ['AGG-NAT-10', 0.900],
+      ['AGG-NAT-20', 1.000],     ['AGG-NAT-2040', 1.650],    ['AGG-NAT-4080', 2.000]
+    ];
+    await t('المواد الاثنتا عشرة موجودة بأسعارها المعتمدة', async function () {
+      for (const [sku, price] of OFFICIAL) {
+        const m = await KX.repo.first('materials', { sku: sku });
+        assert(m, 'المادة مفقودة: ' + sku);
+        assert(m.unit === 'm3', sku + ': الوحدة ليست م³');
+        const p = await KX.pricing.activePrice(sup.id, m.id);
+        assert(p, 'لا يوجد سعر عام لـ ' + sku);
+        near(p.price_per_unit, price, 0.0005);
+      }
+    });
+    await t('كل مادة لها اسم في اللغات الخمس', async function () {
+      const mats2 = await KX.repo.list('materials', {});
+      const langs = ['ar', 'en', 'ur', 'hi', 'bn'];
+      mats2.forEach(function (m) {
+        langs.forEach((l) => assert(m.name_i18n && m.name_i18n[l], m.sku + ': ينقص اسم ' + l));
+      });
+    });
+    await t('السعر الخاص مُعلَّم ولا يظهر في أسعار القائمة', async function () {
+      const all = await KX.repo.list('supplier_prices', {});
+      const special = all.filter((p) => p.is_special);
+      assert(special.length === 1, 'عدد الأسعار الخاصة: ' + special.length);
+      near(special[0].price_per_unit, 1.600);
+      const list = await KX.pricing.activePrice(sup.id, sand.id);
+      near(list.price_per_unit, 1.900);
+    });
+    await t('كل الأسعار لا تشمل النقل ولا الضريبة', async function () {
+      const all = await KX.repo.list('supplier_prices', {});
+      all.forEach(function (p) {
+        assert(p.includes_transport === false, 'سعر يشمل النقل');
+        assert(p.includes_vat === false, 'سعر يشمل الضريبة');
+      });
+    });
+
+    /* ---------- 8ج) اللغات ---------- */
+    group('اللغات');
+    await t('اللغات الخمس مهيّأة باتجاهها الصحيح', function () {
+      assert(KX.i18n.available().join(',') === 'ar,en,ur,hi,bn', KX.i18n.available().join(','));
+      assert(KX.i18n.meta('ar').dir === 'rtl' && KX.i18n.meta('ur').dir === 'rtl', 'اتجاه RTL خاطئ');
+      assert(KX.i18n.meta('hi').dir === 'ltr' && KX.i18n.meta('bn').dir === 'ltr', 'اتجاه LTR خاطئ');
+      assert(KX.i18n.meta('hi').font.indexOf('Devanagari') !== -1, 'خط الهندية ليس ديفاناغاري');
+      assert(KX.i18n.meta('ur').font.indexOf('Nastaliq') !== -1, 'خط الأردية ليس نستعليق');
+    });
+    await t('مفاتيح الجدول المعتمد مترجمة في اللغات الخمس', function () {
+      const CORE = ['select_material', 'quantity', 'cubic_meter', 'delivery_location',
+                    'material_price', 'transport_cost', 'platform_fee', 'vat', 'discount',
+                    'total', 'submit_order', 'pay_now', 'no_cash_on_delivery',
+                    'delivered', 'invoice', 'minimum_order', 'price_excludes_transport'];
+      ['ar', 'en', 'ur', 'hi', 'bn'].forEach(function (l) {
+        CORE.forEach((k) => assert(KX.i18n.has(k, l), 'ينقص المفتاح ' + k + ' في ' + l));
+      });
+    });
+    await t('الرجوع للإنجليزية عند غياب المفتاح، لا ترجمة آلية', function () {
+      const before = KX.i18n.getLang();
+      KX.i18n.setLang('bn');
+      assert(KX.i18n.t('faq') === KX.i18n.dict.en.faq, 'لم يرجع للإنجليزية');
+      assert(KX.i18n.t('__no_such_key__') === '__no_such_key__', 'المفتاح المجهول لم يُعد كما هو');
+      KX.i18n.setLang(before);
+    });
+    await t('اختيار الاسم متعدد اللغات يتبع اللغة الحالية', async function () {
+      const before = KX.i18n.getLang();
+      const m = await KX.repo.first('materials', { sku: 'SAND-NORMAL-05' });
+      KX.i18n.setLang('en'); assert(KX.i18n.pick(m.name_i18n) === 'Normal Sand', KX.i18n.pick(m.name_i18n));
+      KX.i18n.setLang('ar'); assert(KX.i18n.pick(m.name_i18n) === 'رمل عادي', KX.i18n.pick(m.name_i18n));
+      KX.i18n.setLang(before);
+    });
+
     /* ---------- 9) التنسيق والعرض ---------- */
     group('التنسيق');
     await t('العملة بثلاث منازل عشرية', function () {
       assert(KX.util.fmtOMR(12.5) === '12.500 ر.ع.', KX.util.fmtOMR(12.5));
       assert(KX.util.money(0.1 + 0.2) === '0.300', KX.util.money(0.1 + 0.2));
+      assert(KX.util.money(1.9) === '1.900', KX.util.money(1.9));
+    });
+    await t('الكمية تُعرض مع وحدتها', function () {
+      assert(KX.util.fmtQty(18, 'm3') === '18 م³', KX.util.fmtQty(18, 'm3'));
+      assert(KX.util.unitLabel('ton') === 'طن', KX.util.unitLabel('ton'));
     });
     await t('تطبيع أرقام الهواتف العُمانية', function () {
       assert(KX.util.normalizePhone('90000001') === '96890000001');

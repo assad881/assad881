@@ -16,7 +16,11 @@ parts = [
     f'<title>{title}</title>',
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
     '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?'
-    'family=Tajawal:wght@400;500;700;800&display=swap">',
+    'family=Tajawal:wght@400;500;700;800&'
+    'family=Inter:wght@400;500;700;800&'
+    'family=Noto+Nastaliq+Urdu:wght@400;700&'
+    'family=Noto+Sans+Devanagari:wght@400;500;700&'
+    'family=Noto+Sans+Bengali:wght@400;500;700&display=swap">',
     '<style>', css, '</style>',
 ]
 parts.append('<div id="app"><div style="padding:60px;text-align:center;'

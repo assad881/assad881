@@ -31,7 +31,8 @@ KX.viewsAdminConfig = (function () {
           '<div class="field-row">' +
             KX.ui.field({ name: 'unit', label: 'وحدة القياس', type: 'select',
               options: Object.keys(KX.schema.UNITS).map((k) => ({ value: k, label: KX.schema.UNITS[k] })) }) +
-            KX.ui.field({ name: 'density', label: 'الكثافة (طن/م³)', type: 'number', step: '0.01', value: '1.6' }) +
+            KX.ui.field({ name: 'density', label: 'الكثافة (طن/م³)', type: 'number', step: '0.01', value: '1.6',
+              hint: 'للتحويل التقريبي بين المتر المكعب والطن في التقارير' }) +
           '</div>' +
           '<button class="btn btn--primary" type="submit">إضافة المادة</button></form>') +
         KX.ui.card('إضافة سعر لمورد', '<form id="p-form">' +
@@ -42,12 +43,12 @@ KX.viewsAdminConfig = (function () {
               placeholder: 'اختر', options: mats.map((m) => ({ value: m.id, label: m.name })) }) +
           '</div>' +
           '<div class="field-row">' +
-            KX.ui.field({ name: 'price_per_ton', label: 'سعر الطن (ر.ع.)', type: 'number', step: '0.001', required: true }) +
-            KX.ui.field({ name: 'available_tons_per_day', label: 'المتاح يوميًا (طن)', type: 'number', value: '300' }) +
+            KX.ui.field({ name: 'price_per_unit', label: 'سعر الوحدة (ر.ع. / م³)', type: 'number', step: '0.001', required: true }) +
+            KX.ui.field({ name: 'available_per_day', label: 'المتاح يوميًا (م³)', type: 'number', value: '300' }) +
           '</div>' +
           '<div class="field-row">' +
-            KX.ui.field({ name: 'min_qty_tons', label: 'الحد الأدنى (طن)', type: 'number', value: '12' }) +
-            KX.ui.field({ name: 'max_qty_tons', label: 'الحد الأقصى (طن)', type: 'number', value: '600' }) +
+            KX.ui.field({ name: 'min_qty', label: 'الحد الأدنى (م³)', type: 'number', value: '12' }) +
+            KX.ui.field({ name: 'max_qty', label: 'الحد الأقصى (م³)', type: 'number', value: '600' }) +
           '</div>' +
           '<div class="field-row">' +
             KX.ui.field({ name: 'valid_from', label: 'ساري من', type: 'date' }) +
@@ -58,12 +59,12 @@ KX.viewsAdminConfig = (function () {
       '<div class="mt">' + KX.ui.card('قائمة الأسعار السارية', KX.ui.table([
         { key: 's', label: 'المورد', render: (p) => e(supName[p.supplier_id] || '—') },
         { key: 'm', label: 'المادة', render: (p) => e(matName[p.material_id] || '—') },
-        { key: 'price_per_ton', label: 'سعر الطن', num: true, render: (p) => '<b>' + U().money(p.price_per_ton) + '</b>' },
+        { key: 'price_per_unit', label: 'سعر الم³', num: true, render: (p) => '<b>' + U().money(p.price_per_unit) + '</b>' },
         { key: 'tiers', label: 'شرائح الكمية', render: (p) => (p.tiers || []).length
-            ? (p.tiers || []).map((t) => '≥' + t.min_qty + ' طن: ' + U().money(t.price_per_ton)).join('<br>')
+            ? (p.tiers || []).map((t) => '≥' + t.min_qty + ' م³: ' + U().money(t.price_per_unit)).join('<br>')
             : '<span class="muted">—</span>' },
-        { key: 'min_qty_tons', label: 'أدنى/أقصى', num: true, render: (p) => p.min_qty_tons + ' / ' + p.max_qty_tons },
-        { key: 'available_tons_per_day', label: 'متاح يوميًا', num: true },
+        { key: 'min_qty', label: 'أدنى/أقصى', num: true, render: (p) => p.min_qty + ' / ' + p.max_qty },
+        { key: 'available_per_day', label: 'متاح يوميًا', num: true },
         { key: 'c', label: 'عميل خاص', render: (p) => p.customer_id ? KX.ui.badge('سعر تعاقدي', 'orange') : '—' },
         { key: 'valid_from', label: 'من', render: (p) => U().fmtDate(p.valid_from) },
         { key: 'is_active', label: 'الحالة', render: (p) => KX.ui.badge(p.is_active ? 'ساري' : 'موقوف', p.is_active ? 'ok' : 'muted') },
@@ -99,7 +100,7 @@ KX.viewsAdminConfig = (function () {
       const v = KX.ui.formValues(ev.target);
       const errs = U().validate(v, {
         supplier_id: { required: true }, material_id: { required: true },
-        price_per_ton: { required: true, type: 'number', min: 0.001 }
+        price_per_unit: { required: true, type: 'number', min: 0.001 }
       });
       if (Object.keys(errs).length) { U().toast(Object.values(errs)[0], 'error'); return; }
       await savePrice(null, v);
@@ -125,8 +126,8 @@ KX.viewsAdminConfig = (function () {
     document.getElementById('exp').onclick = function () {
       U().download('prices.csv', U().toCSV(prices.map((p) => ({
         supplier: supName[p.supplier_id], material: matName[p.material_id],
-        price_per_ton: p.price_per_ton, min_qty_tons: p.min_qty_tons, max_qty_tons: p.max_qty_tons,
-        available_tons_per_day: p.available_tons_per_day, valid_from: p.valid_from, is_active: p.is_active
+        price_per_unit: p.price_per_unit, min_qty: p.min_qty, max_qty: p.max_qty,
+        available_per_day: p.available_per_day, valid_from: p.valid_from, is_active: p.is_active
       }))), 'text/csv');
     };
     document.getElementById('imp').onclick = () => document.getElementById('file').click();
@@ -138,11 +139,11 @@ KX.viewsAdminConfig = (function () {
       for (const r of rows) {
         const sup = sups.find((s) => s.name === r.supplier);
         const mat = mats.find((m) => m.name === r.material || m.code === r.material);
-        if (!sup || !mat || !Number(r.price_per_ton)) { fail++; continue; }
+        if (!sup || !mat || !Number(r.price_per_unit)) { fail++; continue; }
         await savePrice(null, {
-          supplier_id: sup.id, material_id: mat.id, price_per_ton: r.price_per_ton,
-          min_qty_tons: r.min_qty_tons, max_qty_tons: r.max_qty_tons,
-          available_tons_per_day: r.available_tons_per_day, valid_from: r.valid_from
+          supplier_id: sup.id, material_id: mat.id, price_per_unit: r.price_per_unit,
+          min_qty: r.min_qty, max_qty: r.max_qty,
+          available_per_day: r.available_per_day, valid_from: r.valid_from
         });
         ok++;
       }
@@ -155,9 +156,9 @@ KX.viewsAdminConfig = (function () {
   async function savePrice(id, v) {
     const payload = {
       supplier_id: v.supplier_id, material_id: v.material_id,
-      price_per_ton: Number(v.price_per_ton), currency: 'OMR',
-      min_qty_tons: Number(v.min_qty_tons || 0), max_qty_tons: Number(v.max_qty_tons || 0),
-      available_tons_per_day: Number(v.available_tons_per_day || 0),
+      price_per_unit: Number(v.price_per_unit), currency: 'OMR',
+      min_qty: Number(v.min_qty || 0), max_qty: Number(v.max_qty || 0),
+      available_per_day: Number(v.available_per_day || 0),
       tiers: v.tiers || [],
       valid_from: v.valid_from ? new Date(v.valid_from).toISOString() : U().nowISO(),
       valid_to: v.valid_to ? new Date(v.valid_to).toISOString() : null,
@@ -173,13 +174,13 @@ KX.viewsAdminConfig = (function () {
     await KX.repo.insert('price_history', {
       price_id: (after && after.id) || (before && before.id),
       supplier_id: (after || before).supplier_id, material_id: (after || before).material_id,
-      old_price: before ? before.price_per_ton : null,
-      new_price: after ? after.price_per_ton : null,
+      old_price: before ? before.price_per_unit : null,
+      new_price: after ? after.price_per_unit : null,
       action: action, changed_by: (KX.store.get('session') || {}).user_id,
       changed_by_name: (KX.store.get('session') || {}).name, at: U().nowISO()
     });
     await KX.audit.log('price.' + action, 'supplier_prices', (after || before).id,
-      { from: before ? before.price_per_ton : null, to: after ? after.price_per_ton : null });
+      { from: before ? before.price_per_unit : null, to: after ? after.price_per_unit : null });
   }
 
   function editPriceDialog(p, matName, supName) {
@@ -187,14 +188,14 @@ KX.viewsAdminConfig = (function () {
     wrap.className = 'modal-backdrop';
     wrap.innerHTML = '<div class="modal"><h3>تعديل السعر</h3>' +
       '<p class="muted">' + e(supName[p.supplier_id]) + ' — ' + e(matName[p.material_id]) + '</p>' +
-      KX.ui.field({ name: 'price_per_ton', label: 'سعر الطن', type: 'number', step: '0.001', value: p.price_per_ton }) +
+      KX.ui.field({ name: 'price_per_unit', label: 'سعر الم³', type: 'number', step: '0.001', value: p.price_per_unit }) +
       '<div class="field-row">' +
-        KX.ui.field({ name: 'min_qty_tons', label: 'أدنى كمية', type: 'number', value: p.min_qty_tons }) +
-        KX.ui.field({ name: 'max_qty_tons', label: 'أقصى كمية', type: 'number', value: p.max_qty_tons }) +
+        KX.ui.field({ name: 'min_qty', label: 'أدنى كمية', type: 'number', value: p.min_qty }) +
+        KX.ui.field({ name: 'max_qty', label: 'أقصى كمية', type: 'number', value: p.max_qty }) +
       '</div>' +
-      KX.ui.field({ name: 'available_tons_per_day', label: 'المتاح يوميًا (طن)', type: 'number', value: p.available_tons_per_day }) +
+      KX.ui.field({ name: 'available_per_day', label: 'المتاح يوميًا (م³)', type: 'number', value: p.available_per_day }) +
       KX.ui.field({ name: 'tiers_raw', label: 'شرائح الكمية', placeholder: '100:1.950, 300:1.850',
-        value: (p.tiers || []).map((t) => t.min_qty + ':' + t.price_per_ton).join(', ') }) +
+        value: (p.tiers || []).map((t) => t.min_qty + ':' + t.price_per_unit).join(', ') }) +
       KX.ui.alert('تعديل السعر لا يغيّر الطلبات السابقة — لكل طلب لقطة سعر محفوظة.', 'info', 'ℹ️') +
       '<div class="modal__actions"><button class="btn btn--ghost" data-no>إلغاء</button>' +
       '<button class="btn btn--primary" data-yes>حفظ</button></div></div>';
@@ -203,8 +204,8 @@ KX.viewsAdminConfig = (function () {
     wrap.querySelector('[data-yes]').onclick = async function () {
       const v = KX.ui.formValues(wrap);
       const tiers = String(v.tiers_raw || '').split(',').map((s) => s.trim()).filter(Boolean)
-        .map(function (s) { const [q, pr] = s.split(':'); return { min_qty: Number(q), price_per_ton: Number(pr) }; })
-        .filter((t) => t.min_qty > 0 && t.price_per_ton > 0);
+        .map(function (s) { const [q, pr] = s.split(':'); return { min_qty: Number(q), price_per_unit: Number(pr) }; })
+        .filter((t) => t.min_qty > 0 && t.price_per_unit > 0);
       await savePrice(p.id, Object.assign({}, p, v, { tiers: tiers,
         valid_from: p.valid_from, valid_to: p.valid_to }));
       wrap.remove(); U().toast('حُدّث السعر', 'success'); KX.router.resolve();
@@ -235,7 +236,7 @@ KX.viewsAdminConfig = (function () {
       KX.repo.list('transport_rates', {})
     ]);
     const zName = {}; zs.forEach((z) => { zName[z.id] = z.name; });
-    const tName = {}; tts.forEach((t) => { tName[t.id] = t.name + ' (' + t.capacity_tons + ' طن)'; });
+    const tName = {}; tts.forEach((t) => { tName[t.id] = t.name + ' (' + t.capacity_m3 + ' م³)'; });
 
     L().renderApp(
       '<div class="grid grid-2">' +
@@ -286,7 +287,8 @@ KX.viewsAdminConfig = (function () {
         '<button class="btn btn--ghost btn--sm" id="exp-rates">⬇️ تصدير</button>') + '</div>' +
       '<div class="mt">' + KX.ui.card('أنواع الشاحنات', KX.ui.table([
         { key: 'code', label: 'الرمز' }, { key: 'name', label: 'النوع' },
-        { key: 'capacity_tons', label: 'الحمولة (طن)', num: true },
+        { key: 'capacity_m3', label: 'الحمولة', num: true,
+          render: (t) => t.capacity_m3 + ' م³ (' + t.capacity_tons + ' طن)' },
         { key: 'axles', label: 'المحاور', num: true }
       ], tts, { compact: true })) + '</div>',
       { title: 'المناطق وأسعار النقل', counts: await counts() });
@@ -557,7 +559,7 @@ KX.viewsAdminConfig = (function () {
       { key: 'phone', label: 'الهاتف', render: (s) => '<span class="mono">' + e(U().fmtPhone(s.phone)) + '</span>' },
       { key: 'p', label: 'أسعار مسجّلة', num: true, render: (s) => prices.filter((p) => p.supplier_id === s.id).length },
       { key: 'o', label: 'الطلبات', num: true, render: (s) => orders.filter((o) => o.supplier_id === s.id).length },
-      { key: 'loading_capacity_tons_day', label: 'طاقة التحميل/يوم', num: true },
+      { key: 'loading_capacity_per_day', label: 'طاقة التحميل/يوم', num: true },
       { key: 'rating', label: 'التقييم', num: true, render: (s) => '⭐ ' + s.rating },
       { key: 'is_approved', label: 'الاعتماد', render: (s) => KX.ui.badge(s.is_approved ? 'معتمد' : 'بانتظار الاعتماد', s.is_approved ? 'ok' : 'warn') },
       { key: 'a', label: '', render: (s) => '<button class="btn btn--sm btn--ghost" data-approve-sup="' + s.id + '">' +
@@ -593,7 +595,8 @@ KX.viewsAdminConfig = (function () {
         { key: 'plate_no', label: 'اللوحة', render: (t) => '<b class="mono">' + e(t.plate_no) + '</b>' },
         { key: 'c', label: 'الشركة', render: (t) => e((rows.find((r) => r.id === t.transporter_id) || {}).name || '—') },
         { key: 'make', label: 'الطراز' }, { key: 'year', label: 'السنة', num: true },
-        { key: 'capacity_tons', label: 'الحمولة (طن)', num: true },
+        { key: 'capacity_m3', label: 'الحمولة', num: true,
+          render: (t) => t.capacity_m3 + ' م³ (' + t.capacity_tons + ' طن)' },
         { key: 'is_available', label: 'التوفّر', render: (t) => KX.ui.badge(t.is_available ? 'متاحة' : 'غير متاحة', t.is_available ? 'ok' : 'muted') }
       ], trucks, { compact: true })) + '</div>' +
       '<div class="mt">' + KX.ui.card('السائقون', KX.ui.table([

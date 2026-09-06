@@ -74,8 +74,17 @@ create policy locations_fulfillers on locations for select using (
       or exists (select 1 from trips t where t.order_id = o.id and t.driver_id = kx_driver_id()))));
 
 -- ---------- الأسعار: القائمة العامة مقروءة، والخاصة لصاحبها ----------
-create policy prices_public_read on supplier_prices for select
-  using (is_active and (customer_id is null or customer_id = kx_customer_id() or kx_is_staff()));
+-- السعر الخاص لا يصل لعميل غير معتمد أصلًا من قاعدة البيانات، لا من الواجهة فقط
+create policy prices_public_read on supplier_prices for select using (
+  is_active and (
+    kx_is_staff()
+    or supplier_id = kx_supplier_id()
+    or customer_id = kx_customer_id()
+    or (customer_id is null and not is_special)
+    or (customer_id is null and is_special and exists (
+          select 1 from customer_profiles c
+          where c.id = kx_customer_id() and c.special_pricing_approved))
+  ));
 create policy prices_owner_write on supplier_prices for all
   using (kx_is_staff() or supplier_id = kx_supplier_id())
   with check (kx_is_staff() or supplier_id = kx_supplier_id());

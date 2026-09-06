@@ -36,8 +36,9 @@ KX.settlements = (function () {
         supplier_commission: internal.supplier_commission || 0,
         transporter_commission: internal.transporter_commission || 0,
         total_revenue: internal.platform_revenue || order.platform_fee,
-        tons: order.tons,
-        margin_per_ton: internal.margin_per_ton || 0,
+        quantity: order.quantity,
+        unit: order.unit,
+        margin_per_unit: internal.margin_per_unit || 0,
         recognized_at: U().nowISO()
       });
       await KX.audit.log('settlement.build', 'orders', order.id, { count: rows.length });

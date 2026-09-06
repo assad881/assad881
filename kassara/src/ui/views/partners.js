@@ -24,7 +24,7 @@ KX.viewsPartners = (function () {
       '<div class="grid grid-4">' +
         KX.ui.kpi({ label: 'بانتظار تأكيدك', value: pending.length, accent: true }) +
         KX.ui.kpi({ label: 'أوامر تحميل نشطة', value: loading.length }) +
-        KX.ui.kpi({ label: 'الأطنان المباعة', value: U().fmtNum(U().sum(delivered, (o) => +o.tons), 1) + ' طن' }) +
+        KX.ui.kpi({ label: 'الكمية المباعة', value: U().fmtNum(U().sum(delivered, (o) => +o.quantity), 1) + ' ' + U().unitLabel(KX.config.defaultUnit) }) +
         KX.ui.kpi({ label: 'مستحقاتي', value: U().fmtOMR(due), sub: 'غير مسددة' }) +
       '</div>' +
       '<div class="mt">' + KX.ui.card('أحدث الطلبات', ordersTable(orders.slice(0, 8), 'supplier')) + '</div>',
@@ -35,7 +35,7 @@ KX.viewsPartners = (function () {
     return KX.ui.table([
       { key: 'order_no', label: 'الطلب', render: (o) => '<a href="#/' + kind + '/orders/' + o.id + '"><b>' + e(o.order_no) + '</b></a>' },
       { key: 'm', label: 'المادة', render: (o) => e(((o.price_snapshot || {}).inputs || {}).material_name || '—') },
-      { key: 'tons', label: 'الكمية', num: true, render: (o) => U().fmtNum(o.tons, 1) + ' طن' },
+      { key: 'quantity', label: 'الكمية', num: true, render: (o) => U().fmtQty(o.quantity, o.unit) },
       { key: 'trips_planned', label: 'الرحلات', num: true },
       { key: 'scheduled_at', label: 'الموعد', render: (o) => U().fmtDateTime(o.scheduled_at) },
       { key: 'status', label: 'الحالة', render: (o) => KX.ui.statusBadge(o.status) }
@@ -72,7 +72,7 @@ KX.viewsPartners = (function () {
         KX.ui.card('أمر التوريد',
           row('رقم الطلب', order.order_no) +
           row('المادة', q ? q.inputs.material_name : '—') +
-          row('الكمية المطلوبة', U().fmtNum(order.tons, 1) + ' طن') +
+          row('الكمية المطلوبة', U().fmtQty(order.quantity, order.unit)) +
           row('عدد الرحلات', order.trips_planned + ' × ' + (q ? q.inputs.truck_name : '')) +
           row('موعد التحميل', U().fmtDateTime(order.scheduled_at)) +
           row('وجهة التوصيل', site ? site.label + ' — ' + (q ? q.inputs.zone_name : '') : '—') +
@@ -87,14 +87,15 @@ KX.viewsPartners = (function () {
         KX.ui.card('الرحلات', KX.ui.table([
           { key: 'seq', label: '#' },
           { key: 'status', label: 'الحالة', render: (t) => KX.ui.badge(KX.trips.TRIP_STATUS[t.status].label, KX.trips.TRIP_STATUS[t.status].tone) },
-          { key: 'planned_tons', label: 'مخطط', num: true, render: (t) => U().fmtNum(t.planned_tons, 1) },
-          { key: 'actual_tons', label: 'فعلي', num: true, render: (t) => t.actual_tons ? U().fmtNum(t.actual_tons, 1) : '—' }
+          { key: 'planned_qty', label: 'مخطط', num: true, render: (t) => U().fmtNum(t.planned_qty, 1) },
+          { key: 'actual_qty', label: 'فعلي', num: true, render: (t) => t.actual_qty ? U().fmtNum(t.actual_qty, 1) : '—' }
         ], trips, { compact: true, emptyText: 'لم تُنشأ رحلات بعد' })) +
         KX.ui.card('تذاكر الميزان', KX.ui.table([
           { key: 'ticket_no', label: 'رقم التذكرة' },
-          { key: 'gross_tons', label: 'القائم', num: true },
-          { key: 'tare_tons', label: 'الفارغ', num: true },
-          { key: 'net_tons', label: 'الصافي', num: true, render: (t) => '<b>' + U().fmtNum(t.net_tons, 2) + '</b>' },
+          { key: 'gross_tons', label: 'القائم (طن)', num: true, render: (t) => t.gross_tons || '—' },
+          { key: 'tare_tons', label: 'الفارغ (طن)', num: true, render: (t) => t.tare_tons || '—' },
+          { key: 'net_qty', label: 'الكمية الفعلية', num: true,
+            render: (t) => '<b>' + U().fmtQty(t.net_qty, t.unit) + '</b>' },
           { key: 'recorded_at', label: 'الوقت', render: (t) => U().fmtDateTime(t.recorded_at) }
         ], tickets, { compact: true, emptyText: 'لا توجد تذاكر' })) +
       '</div></div>',
@@ -120,10 +121,13 @@ KX.viewsPartners = (function () {
       wrap.innerHTML = '<div class="modal"><h3>تسجيل تذكرة ميزان</h3>' +
         KX.ui.field({ name: 'trip_id', label: 'الرحلة', type: 'select',
           options: trips.map((t) => ({ value: t.id, label: 'رحلة #' + t.seq + ' — ' + KX.trips.TRIP_STATUS[t.status].label })) }) +
-        KX.ui.field({ name: 'ticket_no', label: 'رقم التذكرة', required: true }) +
+        KX.ui.field({ name: 'ticket_no', label: 'رقم التذكرة / أمر التحميل', required: true }) +
+        KX.ui.field({ name: 'net_qty', required: true, type: 'number', step: '0.5',
+          label: 'الكمية الفعلية المحمّلة (' + U().unitLabel(order.unit) + ')' }) +
+        '<p class="muted" style="font-size:.82rem">الوزن القائم والفارغ اختياريان — يُملآن عند وجود ميزان جسري.</p>' +
         '<div class="field-row">' +
-          KX.ui.field({ name: 'gross_tons', label: 'الوزن القائم (طن)', type: 'number', step: '0.01', required: true }) +
-          KX.ui.field({ name: 'tare_tons', label: 'وزن الشاحنة الفارغة (طن)', type: 'number', step: '0.01', required: true }) +
+          KX.ui.field({ name: 'gross_tons', label: 'الوزن القائم (طن)', type: 'number', step: '0.01' }) +
+          KX.ui.field({ name: 'tare_tons', label: 'وزن الشاحنة الفارغة (طن)', type: 'number', step: '0.01' }) +
         '</div>' +
         '<div class="modal__actions"><button class="btn btn--ghost" data-no>إلغاء</button>' +
         '<button class="btn btn--primary" data-yes>حفظ التذكرة</button></div></div>';
@@ -131,8 +135,11 @@ KX.viewsPartners = (function () {
       wrap.querySelector('[data-no]').onclick = () => wrap.remove();
       wrap.querySelector('[data-yes]').onclick = async function () {
         const v = KX.ui.formValues(wrap);
-        if (!v.ticket_no || !Number(v.gross_tons) || Number(v.gross_tons) <= Number(v.tare_tons)) {
-          U().toast('تحقّق من أرقام الوزن', 'error'); return;
+        if (!v.ticket_no || !(Number(v.net_qty) > 0)) {
+          U().toast('أدخل رقم التذكرة والكمية الفعلية', 'error'); return;
+        }
+        if (v.gross_tons && Number(v.gross_tons) <= Number(v.tare_tons || 0)) {
+          U().toast('الوزن القائم يجب أن يتجاوز وزن الشاحنة الفارغة', 'error'); return;
         }
         await KX.trips.recordWeightTicket(v.trip_id, v);
         wrap.remove(); U().toast('سُجّلت التذكرة', 'success'); KX.router.resolve();
@@ -154,18 +161,18 @@ KX.viewsPartners = (function () {
         '<div class="field-row">' +
           KX.ui.field({ name: 'material_id', label: 'المادة', type: 'select', required: true,
             placeholder: 'اختر', options: mats.map((m) => ({ value: m.id, label: m.name })) }) +
-          KX.ui.field({ name: 'price_per_ton', label: 'سعر الطن (ر.ع.)', type: 'number', step: '0.001', required: true }) +
+          KX.ui.field({ name: 'price_per_unit', label: 'سعر الوحدة (ر.ع. / م³)', type: 'number', step: '0.001', required: true }) +
         '</div>' +
         '<div class="field-row">' +
-          KX.ui.field({ name: 'min_qty_tons', label: 'الحد الأدنى (طن)', type: 'number', value: '12' }) +
-          KX.ui.field({ name: 'available_tons_per_day', label: 'المتاح يوميًا (طن)', type: 'number', value: '300' }) +
+          KX.ui.field({ name: 'min_qty', label: 'الحد الأدنى (م³)', type: 'number', value: '12' }) +
+          KX.ui.field({ name: 'available_per_day', label: 'المتاح يوميًا (م³)', type: 'number', value: '300' }) +
         '</div>' +
         '<button class="btn btn--primary" type="submit">حفظ</button></form>') +
       '<div class="mt">' + KX.ui.card('موادي وأسعاري', KX.ui.table([
         { key: 'm', label: 'المادة', render: (p) => e(matName[p.material_id] || '—') },
-        { key: 'price_per_ton', label: 'سعر الطن', num: true, render: (p) => '<b>' + U().money(p.price_per_ton) + '</b>' },
-        { key: 'min_qty_tons', label: 'أدنى كمية', num: true },
-        { key: 'available_tons_per_day', label: 'المتاح يوميًا', num: true },
+        { key: 'price_per_unit', label: 'سعر الم³', num: true, render: (p) => '<b>' + U().money(p.price_per_unit) + '</b>' },
+        { key: 'min_qty', label: 'أدنى كمية', num: true },
+        { key: 'available_per_day', label: 'المتاح يوميًا', num: true },
         { key: 'is_active', label: 'الحالة', render: (p) => KX.ui.badge(p.is_active ? 'متاحة' : 'موقوفة', p.is_active ? 'ok' : 'muted') },
         { key: 'a', label: '', render: (p) => '<button class="btn btn--sm btn--ghost" data-avail="' + p.id + '">تحديث التوفّر</button> ' +
             '<button class="btn btn--sm btn--ghost" data-tg="' + p.id + '">' + (p.is_active ? 'إيقاف' : 'تفعيل') + '</button>' }
@@ -175,11 +182,12 @@ KX.viewsPartners = (function () {
     document.getElementById('sp-form').onsubmit = async function (ev) {
       ev.preventDefault();
       const v = KX.ui.formValues(ev.target);
-      if (!v.material_id || !Number(v.price_per_ton)) { U().toast('أكمل المادة والسعر', 'error'); return; }
+      if (!v.material_id || !Number(v.price_per_unit)) { U().toast('أكمل المادة والسعر', 'error'); return; }
       await KX.repo.insert('supplier_prices', {
-        supplier_id: sid, material_id: v.material_id, price_per_ton: Number(v.price_per_ton),
-        currency: 'OMR', min_qty_tons: Number(v.min_qty_tons || 0), max_qty_tons: 1000,
-        available_tons_per_day: Number(v.available_tons_per_day || 0), tiers: [],
+        supplier_id: sid, material_id: v.material_id, price_per_unit: Number(v.price_per_unit),
+        unit: 'm3', currency: 'OMR', min_qty: Number(v.min_qty || 0), max_qty: null,
+        available_per_day: Number(v.available_per_day || 0), tiers: [],
+        includes_transport: false, includes_vat: false, is_special: false,
         valid_from: U().nowISO(), valid_to: null, customer_id: null, is_active: true
       });
       await KX.audit.log('price.create', 'supplier_prices', null, { by: 'supplier' });
@@ -195,8 +203,8 @@ KX.viewsPartners = (function () {
       const wrap = document.createElement('div');
       wrap.className = 'modal-backdrop';
       wrap.innerHTML = '<div class="modal"><h3>تحديث التوفّر والسعر</h3>' +
-        KX.ui.field({ name: 'price_per_ton', label: 'سعر الطن', type: 'number', step: '0.001', value: p.price_per_ton }) +
-        KX.ui.field({ name: 'available_tons_per_day', label: 'المتاح اليوم (طن)', type: 'number', value: p.available_tons_per_day }) +
+        KX.ui.field({ name: 'price_per_unit', label: 'سعر الم³', type: 'number', step: '0.001', value: p.price_per_unit }) +
+        KX.ui.field({ name: 'available_per_day', label: 'المتاح اليوم (م³)', type: 'number', value: p.available_per_day }) +
         '<div class="modal__actions"><button class="btn btn--ghost" data-no>إلغاء</button>' +
         '<button class="btn btn--primary" data-yes>حفظ</button></div></div>';
       document.body.appendChild(wrap);
@@ -204,12 +212,12 @@ KX.viewsPartners = (function () {
       wrap.querySelector('[data-yes]').onclick = async function () {
         const v = KX.ui.formValues(wrap);
         await KX.repo.update('supplier_prices', p.id, {
-          price_per_ton: Number(v.price_per_ton),
-          available_tons_per_day: Number(v.available_tons_per_day)
+          price_per_unit: Number(v.price_per_unit),
+          available_per_day: Number(v.available_per_day)
         });
         await KX.repo.insert('price_history', {
           price_id: p.id, supplier_id: sid, material_id: p.material_id,
-          old_price: p.price_per_ton, new_price: Number(v.price_per_ton),
+          old_price: p.price_per_unit, new_price: Number(v.price_per_unit),
           action: 'supplier_update', changed_by: S().user_id, changed_by_name: S().name, at: U().nowISO()
         });
         wrap.remove(); U().toast('حُدّث السعر والتوفّر', 'success'); KX.router.resolve();
@@ -244,22 +252,22 @@ KX.viewsPartners = (function () {
     const mine = items.filter((it) => delivered.some((o) => o.id === it.order_id));
     const g = U().groupBy(mine, 'material_name');
     const rows = Object.keys(g).map((k) => ({
-      material: k, tons: U().round(U().sum(g[k], (x) => +x.tons), 1),
+      material: k, quantity: U().round(U().sum(g[k], (x) => +x.quantity), 1),
       value: U().round(U().sum(g[k], (x) => +x.line_total), 3), orders: g[k].length
     }));
     L().renderApp(
       '<div class="grid grid-3 mb">' +
         KX.ui.kpi({ label: 'طلبات منجزة', value: delivered.length }) +
-        KX.ui.kpi({ label: 'إجمالي الأطنان', value: U().fmtNum(U().sum(rows, (r) => r.tons), 1) + ' طن' }) +
+        KX.ui.kpi({ label: 'إجمالي الكمية', value: U().fmtNum(U().sum(rows, (r) => r.quantity), 1) + ' ' + U().unitLabel(KX.config.defaultUnit) }) +
         KX.ui.kpi({ label: 'قيمة المبيعات', value: U().fmtOMR(U().sum(rows, (r) => r.value)) }) +
       '</div>' +
       KX.ui.card('المبيعات حسب المادة',
-        KX.charts.barsH(rows.map((r) => ({ label: r.material, value: r.tons, display: U().fmtNum(r.tons, 1) + ' طن' })),
-          { aria: 'الأطنان حسب المادة' }) +
+        KX.charts.barsH(rows.map((r) => ({ label: r.material, value: r.quantity, display: U().fmtNum(r.quantity, 1) + ' ' + U().unitLabel(KX.config.defaultUnit) })),
+          { aria: 'الكميات حسب المادة' }) +
         KX.ui.table([
           { key: 'material', label: 'المادة' },
           { key: 'orders', label: 'الطلبات', num: true },
-          { key: 'tons', label: 'الأطنان', num: true, render: (r) => U().fmtNum(r.tons, 1) },
+          { key: 'quantity', label: 'الكمية (م³)', num: true, render: (r) => U().fmtNum(r.quantity, 1) },
           { key: 'value', label: 'القيمة', num: true, render: (r) => U().fmtOMR(r.value) }
         ], rows, { compact: true }),
         '<button class="btn btn--ghost btn--sm" id="csv">⬇️ تصدير</button>'),
@@ -318,7 +326,7 @@ KX.viewsPartners = (function () {
           row('الطلب', order.order_no) +
           row('عدد الرحلات', order.trips_planned) +
           row('نوع الشاحنة', q ? q.inputs.truck_name : '—') +
-          row('الكمية الكلية', U().fmtNum(order.tons, 1) + ' طن') +
+          row('الكمية الكلية', U().fmtQty(order.quantity, order.unit)) +
           row('موقع التحميل', supplier ? supplier.name + ' — ' + supplier.address : '—') +
           row('موقع التسليم', site ? site.label + ' — ' + site.address : '—') +
           row('موعد التوصيل', U().fmtDateTime(order.scheduled_at))) +
@@ -342,7 +350,7 @@ KX.viewsPartners = (function () {
     return KX.ui.table([
       { key: 'seq', label: '#' },
       { key: 'status', label: 'الحالة', render: (t) => KX.ui.badge(KX.trips.TRIP_STATUS[t.status].label, KX.trips.TRIP_STATUS[t.status].tone) },
-      { key: 'planned_tons', label: 'الكمية', num: true, render: (t) => U().fmtNum(t.actual_tons || t.planned_tons, 1) },
+      { key: 'planned_qty', label: 'الكمية', num: true, render: (t) => U().fmtNum(t.actual_qty || t.planned_qty, 1) },
       { key: 'a', label: 'الإجراء', render: (t) => '<button class="btn btn--sm btn--ghost" data-assign="' + t.id + '">' +
           (t.driver_id ? 'تغيير السائق' : 'تعيين سائق') + '</button>' }
     ], trips, { compact: true, emptyText: 'لا توجد رحلات' });
@@ -361,7 +369,7 @@ KX.viewsPartners = (function () {
       { key: 'status', label: 'الحالة', render: (t) => KX.ui.badge(KX.trips.TRIP_STATUS[t.status].label, KX.trips.TRIP_STATUS[t.status].tone) },
       { key: 'd', label: 'السائق', render: (t) => e((drivers.find((d) => d.id === t.driver_id) || {}).name || '—') },
       { key: 'tr', label: 'الشاحنة', render: (t) => e((trucks.find((x) => x.id === t.truck_id) || {}).plate_no || '—') },
-      { key: 'planned_tons', label: 'الكمية', num: true, render: (t) => U().fmtNum(t.actual_tons || t.planned_tons, 1) },
+      { key: 'planned_qty', label: 'الكمية', num: true, render: (t) => U().fmtNum(t.actual_qty || t.planned_qty, 1) },
       { key: 'w', label: 'انتظار', render: (t) => t.waiting_minutes ? t.waiting_minutes + ' د' : '—' },
       { key: 'a', label: '', render: (t) => '<button class="btn btn--sm btn--ghost" data-assign="' + t.id + '">سائق</button> ' +
           '<button class="btn btn--sm btn--ghost" data-wait="' + t.id + '">انتظار</button>' }
@@ -380,7 +388,7 @@ KX.viewsPartners = (function () {
         KX.ui.field({ name: 'driver_id', label: 'السائق', type: 'select', value: t.driver_id || '',
           placeholder: 'اختر', options: drivers.map((d) => ({ value: d.id, label: d.name })) }) +
         KX.ui.field({ name: 'truck_id', label: 'الشاحنة', type: 'select', value: t.truck_id || '',
-          placeholder: 'اختر', options: trucks.map((x) => ({ value: x.id, label: x.plate_no + ' — ' + x.capacity_tons + ' طن' })) }) +
+          placeholder: 'اختر', options: trucks.map((x) => ({ value: x.id, label: x.plate_no + ' — ' + x.capacity_m3 + ' م³' })) }) +
         '<div class="modal__actions"><button class="btn btn--ghost" data-no>إلغاء</button>' +
         '<button class="btn btn--primary" data-yes>تعيين</button></div></div>';
       document.body.appendChild(wrap);
@@ -418,7 +426,7 @@ KX.viewsPartners = (function () {
           '<div class="field-row">' +
             KX.ui.field({ name: 'plate_no', label: 'رقم اللوحة', required: true, placeholder: '1 د ح 4521' }) +
             KX.ui.field({ name: 'truck_type_id', label: 'النوع', type: 'select', required: true,
-              placeholder: 'اختر', options: types.map((t) => ({ value: t.id, label: t.name + ' (' + t.capacity_tons + ' طن)' })) }) +
+              placeholder: 'اختر', options: types.map((t) => ({ value: t.id, label: t.name + ' (' + t.capacity_m3 + ' م³)' })) }) +
           '</div>' +
           '<div class="field-row">' +
             KX.ui.field({ name: 'make', label: 'الطراز' }) +
@@ -439,7 +447,8 @@ KX.viewsPartners = (function () {
       '<div class="mt">' + KX.ui.card('شاحناتي', KX.ui.table([
         { key: 'plate_no', label: 'اللوحة', render: (t) => '<b class="mono">' + e(t.plate_no) + '</b>' },
         { key: 'ty', label: 'النوع', render: (t) => e(tName[t.truck_type_id] || '—') },
-        { key: 'capacity_tons', label: 'الحمولة', num: true, render: (t) => t.capacity_tons + ' طن' },
+        { key: 'capacity_m3', label: 'الحمولة', num: true,
+          render: (t) => t.capacity_m3 + ' م³ (' + t.capacity_tons + ' طن)' },
         { key: 'make', label: 'الطراز' }, { key: 'year', label: 'السنة', num: true },
         { key: 'is_available', label: 'التوفّر', render: (t) => KX.ui.badge(t.is_available ? 'متاحة' : 'غير متاحة', t.is_available ? 'ok' : 'muted') },
         { key: 'a', label: '', render: (t) => '<button class="btn btn--sm btn--ghost" data-tg-truck="' + t.id + '">تبديل التوفّر</button>' }
@@ -460,7 +469,8 @@ KX.viewsPartners = (function () {
       const ty = types.find((t) => t.id === v.truck_type_id);
       await KX.repo.insert('trucks', {
         transporter_id: tid, truck_type_id: v.truck_type_id, plate_no: v.plate_no,
-        make: v.make, year: Number(v.year), capacity_tons: ty.capacity_tons, is_available: true
+        make: v.make, year: Number(v.year),
+        capacity_m3: ty.capacity_m3, capacity_tons: ty.capacity_tons, is_available: true
       });
       await KX.audit.log('truck.create', 'trucks', null, { plate: v.plate_no });
       U().toast('أُضيفت الشاحنة', 'success'); KX.router.resolve();
@@ -535,7 +545,7 @@ KX.viewsPartners = (function () {
         KX.ui.badge(KX.trips.TRIP_STATUS[t.status].label, KX.trips.TRIP_STATUS[t.status].tone) + '</div>' +
         '<div class="panel mb">' +
           row('المادة', ((o.price_snapshot || {}).inputs || {}).material_name || '—') +
-          row('الكمية', U().fmtNum(t.planned_tons, 1) + ' طن') +
+          row('الكمية', U().fmtQty(t.planned_qty, t.unit)) +
           row('التحميل من', sup.name || '—') +
           row('التسليم في', site.label || '—') +
           row('الموعد', U().fmtDateTime(o.scheduled_at)) +
@@ -601,7 +611,7 @@ KX.viewsPartners = (function () {
     L().renderApp(KX.ui.table([
       { key: 'order_no', label: 'الطلب' },
       { key: 'seq', label: 'الرحلة', render: (t) => '#' + t.seq },
-      { key: 'planned_tons', label: 'الكمية', num: true, render: (t) => U().fmtNum(t.actual_tons || t.planned_tons, 1) + ' طن' },
+      { key: 'planned_qty', label: 'الكمية', num: true, render: (t) => U().fmtQty(t.actual_qty || t.planned_qty, t.unit) },
       { key: 'status', label: 'الحالة', render: (t) => KX.ui.badge(KX.trips.TRIP_STATUS[t.status].label, KX.trips.TRIP_STATUS[t.status].tone) },
       { key: 'u', label: 'التاريخ', render: (t) => U().fmtDate((t.timeline || []).slice(-1)[0].at) }
     ], done, { compact: true, emptyText: 'لا توجد رحلات سابقة' }), { title: 'رحلاتي السابقة' });

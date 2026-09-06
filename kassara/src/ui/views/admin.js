@@ -38,13 +38,13 @@ KX.viewsAdmin = (function () {
 
     const kpis = '<div class="grid grid-4">' +
       KX.ui.kpi({ label: 'عدد الطلبات', value: U().fmtNum(m.orders_count), delta: m.orders_delta, accent: true }) +
-      KX.ui.kpi({ label: 'الأطنان المباعة', value: U().fmtNum(m.tons_sold, 1) + ' طن', delta: m.tons_delta }) +
+      KX.ui.kpi({ label: 'الكمية المباعة', value: U().fmtQty(m.qty_sold, 'm3'), delta: m.qty_delta }) +
       KX.ui.kpi({ label: 'إجمالي قيمة الطلبات', value: U().fmtOMR(m.gross_value), delta: m.gross_delta }) +
       KX.ui.kpi({ label: 'إيراد المنصة', value: U().fmtOMR(m.platform_revenue), delta: m.revenue_delta, accent: true }) +
       '</div><div class="grid grid-4 mt">' +
       KX.ui.kpi({ label: 'متوسط قيمة الطلب', value: U().fmtOMR(m.avg_order_value) }) +
       KX.ui.kpi({ label: 'متوسط زمن التوصيل', value: m.avg_delivery_hours + ' ساعة' }) +
-      KX.ui.kpi({ label: 'الربحية لكل طن', value: U().fmtOMR(m.margin_per_ton) }) +
+      KX.ui.kpi({ label: 'الربحية لكل م³', value: U().fmtOMR(m.margin_per_unit) }) +
       KX.ui.kpi({ label: 'تكلفة النقل', value: U().fmtOMR(m.transport_cost) }) +
       '</div>';
 
@@ -69,11 +69,11 @@ KX.viewsAdmin = (function () {
           KX.charts.line(valueSeries, { aria: 'قيمة الطلبات لكل يوم' })) +
       '</div>' +
       '<div class="grid grid-2 mt">' +
-        KX.ui.card('الأطنان المسلّمة حسب المادة',
-          KX.charts.barsH(mats.slice(0, 8), { aria: 'الأطنان حسب المادة' }) +
+        KX.ui.card('الكميات المسلّمة حسب المادة',
+          KX.charts.barsH(mats.slice(0, 8), { aria: 'الكميات حسب المادة' }) +
           (mats.length ? KX.ui.table([
             { key: 'label', label: 'المادة' },
-            { key: 'value', label: 'الأطنان', num: true, render: (r) => U().fmtNum(r.value, 1) }
+            { key: 'value', label: 'الكمية (م³)', num: true, render: (r) => U().fmtNum(r.value, 1) }
           ], mats, { compact: true }) : '')) +
         KX.ui.card('أكثر المناطق طلبًا',
           KX.charts.barsH(zones.slice(0, 8), { aria: 'الطلبات حسب المنطقة' })) +
@@ -86,13 +86,13 @@ KX.viewsAdmin = (function () {
           { key: 'value', label: 'المبلغ', num: true, render: (r) => U().fmtOMR(r.value) }
         ], split, { compact: true })) + '</div>';
 
-    const maxTons = Math.max.apply(null, sup.map((s) => s.tons).concat([1]));
+    const maxQty = Math.max.apply(null, sup.map((s) => s.quantity).concat([1]));
     const perf =
       '<div class="grid grid-2 mt">' +
         KX.ui.card('أداء الموردين', KX.ui.table([
           { key: 'name', label: 'المورد' },
-          { key: 'tons', label: 'الأطنان', num: true,
-            render: (r) => U().fmtNum(r.tons, 1) + KX.charts.mini(r.tons, maxTons) },
+          { key: 'quantity', label: 'الكمية (م³)', num: true,
+            render: (r) => U().fmtNum(r.quantity, 1) + KX.charts.mini(r.quantity, maxQty) },
           { key: 'delivered', label: 'مسلّم / كلي', num: true, render: (r) => r.delivered + ' / ' + r.orders },
           { key: 'fulfillment', label: 'نسبة الإنجاز', num: true, render: (r) => r.fulfillment + '%' },
           { key: 'rating', label: 'التقييم', num: true, render: (r) => '⭐ ' + r.rating }
@@ -121,7 +121,7 @@ KX.viewsAdmin = (function () {
 
     document.getElementById('export-kpi').onclick = function () {
       U().download('kpis-' + days + 'd.csv', U().toCSV([{
-        الفترة_بالأيام: days, عدد_الطلبات: m.orders_count, الأطنان: m.tons_sold,
+        الفترة_بالأيام: days, عدد_الطلبات: m.orders_count, الكمية_م3: m.qty_sold,
         قيمة_الطلبات: m.gross_value, إيراد_المنصة: m.platform_revenue,
         متوسط_الطلب: m.avg_order_value, متوسط_زمن_التوصيل_ساعة: m.avg_delivery_hours,
         الملغاة: m.cancelled, المتأخرة: m.late
@@ -159,7 +159,7 @@ KX.viewsAdmin = (function () {
       { key: 'c', label: 'العميل', render: (r) => e((customers[r.customer_id] || {}).name || '—') },
       { key: 's', label: 'المورد', render: (r) => e((suppliers[r.supplier_id] || {}).name || '—') },
       { key: 't', label: 'الناقل', render: (r) => e((carriers[r.transporter_id] || {}).name || '<span class="muted">غير معيّن</span>') },
-      { key: 'tons', label: 'الأطنان', num: true, render: (r) => U().fmtNum(r.tons, 1) },
+      { key: 'quantity', label: 'الكمية (م³)', num: true, render: (r) => U().fmtNum(r.quantity, 1) },
       { key: 'total', label: 'الإجمالي', num: true, render: (r) => U().fmtOMR(r.total) },
       { key: 'paid', label: 'المدفوع', num: true, render: (r) => U().fmtOMR(r.amount_paid || 0) },
       { key: 'status', label: 'الحالة', render: (r) => KX.ui.statusBadge(r.status) },
@@ -175,7 +175,7 @@ KX.viewsAdmin = (function () {
       U().download('orders.csv', U().toCSV(rows.map((o) => ({
         رقم_الطلب: o.order_no, الحالة: KX.orders.label(o.status),
         العميل: (customers[o.customer_id] || {}).name, المورد: (suppliers[o.supplier_id] || {}).name,
-        الأطنان: o.tons, الرحلات: o.trips_planned, الإجمالي: o.total, المدفوع: o.amount_paid,
+        الكمية_م3: o.quantity, الرحلات: o.trips_planned, الإجمالي: o.total, المدفوع: o.amount_paid,
         التاريخ: o.created_at
       }))), 'text/csv');
     };
@@ -220,7 +220,8 @@ KX.viewsAdmin = (function () {
         { key: 'status', label: 'الحالة', render: (t) => KX.ui.badge(KX.trips.TRIP_STATUS[t.status].label, KX.trips.TRIP_STATUS[t.status].tone) },
         { key: 'd', label: 'السائق', render: (t) => e(((drivers.find((x) => x.id === t.driver_id)) || {}).name || 'غير معيّن') },
         { key: 'tr', label: 'الشاحنة', render: (t) => e(((trucks.find((x) => x.id === t.truck_id)) || {}).plate_no || '—') },
-        { key: 'tons', label: 'الكمية', num: true, render: (t) => U().fmtNum(t.actual_tons || t.planned_tons, 1) },
+        { key: 'quantity', label: 'الكمية', num: true,
+          render: (t) => U().fmtQty(t.actual_qty || t.planned_qty, t.unit) },
         { key: 'w', label: 'انتظار', num: true, render: (t) => t.waiting_minutes
             ? (t.waiting_minutes + ' د — ' + U().fmtOMR(t.waiting_fee) +
                (t.waiting_approved ? ' ' + KX.ui.badge('معتمد', 'ok')
@@ -237,7 +238,7 @@ KX.viewsAdmin = (function () {
       row('إيراد المنصة', U().fmtOMR(internal.platform_revenue || order.platform_fee)) +
       row('مستحق المورد', U().fmtOMR(internal.supplier_payable || 0)) +
       row('مستحق الناقل', U().fmtOMR(internal.transporter_payable || 0)) +
-      row('الربحية لكل طن', U().fmtOMR(internal.margin_per_ton || 0)));
+      row('الربحية لكل م³', U().fmtOMR(internal.margin_per_unit || 0)));
 
     const history = (order.history || []).slice().reverse().map((h, i) => ({
       title: KX.orders.label(h.status),
@@ -262,7 +263,7 @@ KX.viewsAdmin = (function () {
             row('نوع الحساب', KX.schema.CUSTOMER_TYPES[(customer || {}).customer_type] || '—') +
             row('المادة', q ? q.inputs.material_name : '—') +
             row('المورد', (supplier || {}).name || '—') +
-            row('الكمية', U().fmtNum(order.tons, 1) + ' طن') +
+            row('الكمية', U().fmtQty(order.quantity, order.unit)) +
             row('الموقع', site ? site.label + ' — ' + site.address : '—') +
             row('الموعد', U().fmtDateTime(order.scheduled_at)) +
             row('رمز الاستلام', order.delivery_otp || '—') +
@@ -568,7 +569,7 @@ KX.viewsAdmin = (function () {
       '<div class="grid grid-2">' +
         KX.ui.card('المبيعات حسب المادة', KX.ui.table([
           { key: 'label', label: 'المادة' },
-          { key: 'value', label: 'الأطنان', num: true, render: (r) => U().fmtNum(r.value, 1) }
+          { key: 'value', label: 'الكمية (م³)', num: true, render: (r) => U().fmtNum(r.value, 1) }
         ], mats, { compact: true })) +
         KX.ui.card('الطلبات حسب المنطقة', KX.ui.table([
           { key: 'label', label: 'المنطقة' },
@@ -584,7 +585,7 @@ KX.viewsAdmin = (function () {
       '<div class="grid grid-2 mt">' +
         KX.ui.card('تقرير الموردين', KX.ui.table([
           { key: 'name', label: 'المورد' }, { key: 'orders', label: 'طلبات', num: true },
-          { key: 'tons', label: 'أطنان', num: true, render: (r) => U().fmtNum(r.tons, 1) },
+          { key: 'quantity', label: 'الكمية (م³)', num: true, render: (r) => U().fmtNum(r.quantity, 1) },
           { key: 'value', label: 'قيمة المواد', num: true, render: (r) => U().fmtOMR(r.value) },
           { key: 'cancelled', label: 'ملغاة', num: true }
         ], sup, { compact: true }), '<button class="btn btn--ghost btn--sm" id="csv-sup">⬇️</button>') +

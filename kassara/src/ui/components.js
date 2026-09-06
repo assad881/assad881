@@ -85,26 +85,34 @@ KX.ui = (function () {
       (o.meta ? '<div class="choice__meta">' + e(o.meta) + '</div>' : '') +
       (o.price ? '<div class="choice__price">' + e(o.price) + '</div>' : '') + '</button>';
 
-  /* ملخّص السعر التفصيلي — يُعرض للعميل قبل الاعتماد */
+  /* ملخّص السعر التفصيلي — يُعرض للعميل قبل الاعتماد.
+     القاعدة: يرى العميل سعر المادة + النقل + الرسوم + الضريبة + الخصم والإجمالي. */
   function priceBox(q, opts) {
     opts = opts || {};
     const L = q.lines, Q = q.quantities;
+    const T = (k) => KX.i18n.t(k);
+    const u = U().unitLabel(Q.unit);
     let h = '<div class="price-box">';
-    h += '<div class="line"><span>سعر المادة (' + U().fmtNum(Q.tons, 1) + ' طن × ' +
-         U().money(L.unit_price_per_ton) + ')</span><b>' + U().money(L.material_cost) + '</b></div>';
-    h += '<div class="line"><span>النقل (' + Q.trips + ' رحلة × ' + U().money(L.transport_per_trip) +
-         ')</span><b>' + U().money(L.transport_cost) + '</b></div>';
-    h += '<div class="line"><span>رسوم المنصة</span><b>' + U().money(L.platform_fee) + '</b></div>';
+    h += '<div class="line"><span>' + e(T('material_price')) + ' (' +
+         U().fmtNum(Q.quantity, 1) + ' ' + e(u) + ' × ' + U().money(L.unit_price) +
+         ')</span><b>' + U().money(L.material_cost) + '</b></div>';
+    h += '<div class="line"><span>' + e(T('transport_cost')) + ' (' + Q.trips + ' × ' +
+         U().money(L.transport_per_trip) + ')</span><b>' + U().money(L.transport_cost) + '</b></div>';
+    h += '<div class="line"><span>' + e(T('platform_fee')) + '</span><b>' +
+         U().money(L.platform_fee) + '</b></div>';
     if (L.discount > 0)
-      h += '<div class="line line--discount"><span>الخصم' + (L.coupon_code ? ' (' + e(L.coupon_code) + ')' : '') +
+      h += '<div class="line line--discount"><span>' + e(T('discount')) +
+           (L.coupon_code ? ' (' + e(L.coupon_code) + ')' : '') +
            '</span><b>− ' + U().money(L.discount) + '</b></div>';
     if (L.vat > 0)
-      h += '<div class="line"><span>ضريبة القيمة المضافة (' + (L.vat_rate * 100).toFixed(0) + '%)</span><b>' +
-           U().money(L.vat) + '</b></div>';
-    h += '<hr><div class="total"><span>السعر النهائي</span><b>' + U().fmtOMR(q.totals.total) + '</b></div>';
+      h += '<div class="line"><span>' + e(T('vat')) + ' (' + (L.vat_rate * 100).toFixed(0) +
+           '%)</span><b>' + U().money(L.vat) + '</b></div>';
+    h += '<hr><div class="total"><span>' + e(T('total')) + '</span><b>' +
+         U().fmtOMR(q.totals.total) + '</b></div>';
     if (!opts.hideNote)
       h += '<div style="margin-top:10px;font-size:.78rem;color:#9fb5c8">' +
-           'السعر شامل التوريد والنقل حتى موقعك. لا يتغيّر بعد الدفع إلا بموافقتك.</div>';
+           e(T('price_excludes_transport')) + ' — ' +
+           'وهو مضاف هنا بندًا مستقلًا. لا يتغيّر السعر بعد الدفع إلا بموافقتك.</div>';
     h += '</div>';
     return h;
   }

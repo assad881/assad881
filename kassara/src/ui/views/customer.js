@@ -24,13 +24,13 @@ KX.viewsCustomer = (function () {
     const active = orders.filter((o) => !KX.orders.isFinal(o.status));
     const delivered = orders.filter((o) => o.status === 'delivered');
     const toPay = orders.filter((o) => o.status === 'ready_for_payment');
-    const tons = U().round(U().sum(delivered, (o) => Number(o.tons)), 1);
+    const qty = U().round(U().sum(delivered, (o) => Number(o.quantity || 0)), 1);
     const spent = U().round(U().sum(delivered, (o) => Number(o.total)), 3);
 
     const kpis = '<div class="grid grid-4">' +
       KX.ui.kpi({ label: 'طلبات نشطة', value: active.length, accent: true }) +
       KX.ui.kpi({ label: 'بانتظار الدفع', value: toPay.length, sub: toPay.length ? 'يتطلب إجراءً منك' : 'لا شيء معلّق' }) +
-      KX.ui.kpi({ label: 'إجمالي الأطنان المستلمة', value: U().fmtNum(tons, 1) + ' طن' }) +
+      KX.ui.kpi({ label: 'إجمالي الكمية المستلمة', value: U().fmtQty(qty, 'm3') }) +
       KX.ui.kpi({ label: 'إجمالي المصروف', value: U().fmtOMR(spent) }) +
       '</div>';
 
@@ -43,7 +43,7 @@ KX.viewsCustomer = (function () {
     const table = KX.ui.table([
       { key: 'order_no', label: 'رقم الطلب',
         render: (r) => '<a href="#/customer/orders/' + r.id + '"><b>' + e(r.order_no) + '</b></a>' },
-      { key: 'tons', label: 'الكمية', num: true, render: (r) => U().fmtNum(r.tons, 1) + ' طن' },
+      { key: 'quantity', label: 'الكمية', num: true, render: (r) => U().fmtQty(r.quantity, r.unit) },
       { key: 'total', label: 'الإجمالي', num: true, render: (r) => U().fmtOMR(r.total) },
       { key: 'status', label: 'الحالة', render: (r) => KX.ui.statusBadge(r.status) },
       { key: 'created_at', label: 'التاريخ', render: (r) => U().fmtDate(r.created_at) }
@@ -85,11 +85,21 @@ KX.viewsCustomer = (function () {
     const state = {
       site_id: (sites.find((s) => s.is_default) || sites[0]).id,
       material_id: null, supplier_id: null, truck_type_id: null,
-      unit: 'ton', quantity: '', scheduled_at: '', coupon_code: '', notes: '',
-      quote: null
+      order_by: 'unit', quantity: '', scheduled_at: '',
+      coupon_code: '', unlock_code: '', notes: '', quote: null
+    };
+    /* وحدة البيع تأتي من المادة المختارة — لا تُخلط الوحدات في الطلب الواحد */
+    const matUnit = () => {
+      const m = mats.find((x) => x.id === state.material_id);
+      return (m && m.unit) || KX.config.defaultUnit;
     };
 
-    const catName = {}; cats.forEach((c) => { catName[c.id] = c.name; });
+    /* المقاس '—' في القائمة الرسمية يعني «بلا مقاس»، فلا يُعرض */
+    const hasSize = (m) => m.size && m.size !== '—' && String(m.size).trim() !== '';
+    const catName = {};
+    cats.forEach(function (c) {
+      catName[c.id] = KX.i18n.getLang() === 'ar' ? c.name : (c.name_en || c.name);
+    });
     /* المواد التي لها سعر ساري لدى مورد واحد على الأقل */
     const availableMats = mats.filter((m) => prices.some((p) => p.material_id === m.id));
 
@@ -101,7 +111,7 @@ KX.viewsCustomer = (function () {
 
       const html =
         /* الخطوة 1: الموقع */
-        KX.ui.card('1) موقع التوصيل',
+        KX.ui.card('1) ' + KX.i18n.t('delivery_location'),
           '<div class="choice-grid">' + sites.map((s) => KX.ui.choice({
             group: 'site', value: s.id, selected: s.id === state.site_id,
             title: s.label, meta: (zones.find((z) => z.id === s.zone_id) || {}).name + ' — ' + s.address
@@ -109,54 +119,65 @@ KX.viewsCustomer = (function () {
           '<div class="mt"><a href="#/customer/sites" class="btn btn--ghost btn--sm">إدارة المواقع</a></div>') +
 
         /* الخطوة 2: المادة */
-        '<div class="mt">' + KX.ui.card('2) المادة المطلوبة',
+        '<div class="mt">' + KX.ui.card('2) ' + KX.i18n.t('select_material'),
           '<div class="choice-grid">' + availableMats.map(function (m) {
-            const ps = prices.filter((p) => p.material_id === m.id && !p.customer_id);
-            const min = ps.length ? Math.min.apply(null, ps.map((p) => Number(p.price_per_ton))) : 0;
+            /* أسعار القائمة العامة فقط — السعر الخاص لا يُعرض علنًا */
+            const ps = prices.filter((p) => p.material_id === m.id && !p.customer_id && !p.is_special);
+            const min = ps.length ? Math.min.apply(null, ps.map((p) => Number(p.price_per_unit))) : 0;
             return KX.ui.choice({
               group: 'material', value: m.id, selected: m.id === state.material_id,
-              title: m.name, meta: catName[m.category_id],
-              price: 'من ' + U().money(min) + ' / طن'
+              title: KX.i18n.pick(m.name_i18n, m.name) + (hasSize(m) ? ' — ' + m.size : ''),
+              meta: catName[m.category_id] + (m.sku ? ' • ' + m.sku : ''),
+              price: U().money(min) + ' / ' + U().unitLabel(m.unit)
             });
           }).join('') + '</div>') + '</div>' +
 
         /* الخطوة 3: المورد */
-        (state.material_id ? '<div class="mt">' + KX.ui.card('3) المورد',
+        (state.material_id ? '<div class="mt">' + KX.ui.card('3) ' + KX.i18n.t('supplier'),
           '<div class="choice-grid">' + suppliersFor.map(function (s) {
-            const p = prices.find((x) => x.supplier_id === s.id && x.material_id === state.material_id && !x.customer_id);
+            const p = prices.find((x) => x.supplier_id === s.id && x.material_id === state.material_id
+                                          && !x.customer_id && !x.is_special);
             return KX.ui.choice({
               group: 'supplier', value: s.id, selected: s.id === state.supplier_id,
-              title: s.name, meta: s.wilayat + ' • ⭐ ' + s.rating + ' • طاقة ' + s.loading_capacity_tons_day + ' طن/يوم',
-              price: U().money(p ? p.price_per_ton : 0) + ' / طن'
+              title: s.name,
+              meta: s.wilayat + ' • طاقة تحميل ' + s.loading_capacity_per_day + ' م³/يوم',
+              price: U().money(p ? p.price_per_unit : 0) + ' / ' + U().unitLabel(matUnit())
             });
           }).join('') + '</div>') + '</div>' : '') +
 
         /* الخطوة 4: الكمية والشاحنة */
-        (state.supplier_id ? '<div class="mt">' + KX.ui.card('4) الكمية والشاحنة',
+        (state.supplier_id ? '<div class="mt">' + KX.ui.card('4) ' + KX.i18n.t('quantity') + ' + ' + KX.i18n.t('truck'),
           '<div class="choice-grid mb">' + truckTypes.map((t) => KX.ui.choice({
             group: 'truck', value: t.id, selected: t.id === state.truck_type_id,
-            title: t.name, meta: 'حمولة ' + t.capacity_tons + ' طن'
+            title: t.name, meta: 'حمولة ' + t.capacity_m3 + ' م³'
           })).join('') + '</div>' +
+          KX.ui.alert(e(KX.i18n.t('minimum_order')) + '. ' + e(KX.i18n.t('price_excludes_transport')) +
+            ' — يُضاف النقل والضريبة بندًا مستقلًا بعد تحديد الموقع.', 'info', '🚚') +
           '<div class="field-row">' +
-            KX.ui.field({ name: 'unit', label: 'وحدة الطلب', type: 'select', value: state.unit,
-              options: [{ value: 'ton', label: 'بالطن' }, { value: 'truck', label: 'بعدد الشاحنات' }] }) +
-            KX.ui.field({ name: 'quantity', label: state.unit === 'ton' ? 'الكمية (طن)' : 'عدد الشاحنات',
-              type: 'number', step: state.unit === 'ton' ? '0.5' : '1', min: 1, value: state.quantity, required: true }) +
+            KX.ui.field({ name: 'order_by', label: 'طريقة إدخال الكمية', type: 'select', value: state.order_by,
+              options: [{ value: 'unit', label: 'بالمتر المكعب' }, { value: 'truck', label: 'بعدد الشاحنات' }] }) +
+            KX.ui.field({ name: 'quantity',
+              label: state.order_by === 'unit'
+                ? KX.i18n.t('quantity') + ' (' + U().unitLabel(matUnit()) + ')'
+                : KX.i18n.t('truck'),
+              type: 'number', step: '1', min: 1, value: state.quantity, required: true }) +
           '</div>' +
           '<div class="field-row">' +
-            KX.ui.field({ name: 'scheduled_at', label: 'تاريخ ووقت التوصيل', type: 'datetime-local',
+            KX.ui.field({ name: 'scheduled_at', label: KX.i18n.t('delivery_date'), type: 'datetime-local',
               value: state.scheduled_at, required: true }) +
             KX.ui.field({ name: 'coupon_code', label: 'كوبون خصم (اختياري)', value: state.coupon_code,
               placeholder: 'WELCOME10' }) +
           '</div>' +
+          KX.ui.field({ name: 'unlock_code', label: 'كود سعر خاص (إن وُجد)', value: state.unlock_code,
+            hint: 'يُصرف من الإدارة — ويُطبَّق تلقائيًا للحسابات المعتمدة دون كود' }) +
           KX.ui.field({ name: 'notes', label: 'ملاحظات للمورد أو السائق', type: 'textarea', rows: 2, value: state.notes }) +
           '<button class="btn btn--navy btn--block" id="calc">احسب السعر</button>') + '</div>' : '') +
 
         /* الخطوة 5: عرض السعر */
         '<div id="quote-area" class="mt"></div>';
 
-      L().renderApp(html, { title: 'طلب جديد',
-        subtitle: 'الموقع: ' + (site ? site.label : '—'), counts: null });
+      L().renderApp(html, { title: KX.i18n.t('new_order'),
+        subtitle: KX.i18n.t('delivery_location') + ': ' + (site ? site.label : '—'), counts: null });
       bind();
       if (state.quote) renderQuote();
     }
@@ -170,21 +191,23 @@ KX.viewsCustomer = (function () {
       KX.ui.bindChoices(root, 'supplier', (v) => { state.supplier_id = v; state.quote = null; render(); });
       KX.ui.bindChoices(root, 'truck', (v) => { state.truck_type_id = v; state.quote = null; render(); });
 
-      ['unit', 'quantity', 'scheduled_at', 'coupon_code', 'notes'].forEach(function (n) {
-        const el = document.querySelector('[name=' + n + ']');
-        if (!el) return;
-        el.onchange = function () {
-          state[n] = el.value;
-          if (n === 'unit') { state.quote = null; render(); }
-        };
-      });
+      ['order_by', 'quantity', 'scheduled_at', 'coupon_code', 'unlock_code', 'notes']
+        .forEach(function (n) {
+          const el = document.querySelector('[name=' + n + ']');
+          if (!el) return;
+          el.onchange = function () {
+            state[n] = el.value;
+            if (n === 'order_by') { state.quote = null; render(); }
+          };
+        });
       const calc = document.getElementById('calc');
       if (calc) calc.onclick = doQuote;
     }
 
     async function doQuote() {
       const el = (n) => document.querySelector('[name=' + n + ']');
-      ['unit', 'quantity', 'scheduled_at', 'coupon_code', 'notes'].forEach((n) => { if (el(n)) state[n] = el(n).value; });
+      ['order_by', 'quantity', 'scheduled_at', 'coupon_code', 'unlock_code', 'notes']
+        .forEach((n) => { if (el(n)) state[n] = el(n).value; });
       if (!state.truck_type_id) { U().toast('اختر نوع الشاحنة', 'error'); return; }
       if (!Number(state.quantity)) { U().toast('أدخل الكمية', 'error'); return; }
       if (!state.scheduled_at) { U().toast('حدّد تاريخ ووقت التوصيل', 'error'); return; }
@@ -193,9 +216,9 @@ KX.viewsCustomer = (function () {
       document.getElementById('quote-area').innerHTML = KX.ui.loading('جارٍ حساب السعر…');
       const q = await KX.pricing.quote({
         supplier_id: state.supplier_id, material_id: state.material_id,
-        quantity: Number(state.quantity), unit: state.unit,
+        quantity: Number(state.quantity), order_by: state.order_by,
         truck_type_id: state.truck_type_id, zone_id: site.zone_id, site: site.coords,
-        customer_id: cid, coupon_code: state.coupon_code,
+        customer_id: cid, coupon_code: state.coupon_code, unlock_code: state.unlock_code,
         scheduled_at: new Date(state.scheduled_at).toISOString()
       });
       state.quote = q;
@@ -209,12 +232,13 @@ KX.viewsCustomer = (function () {
         area.innerHTML = KX.ui.alert(q.errors.map(e).join('<br>'), 'danger', '⛔');
         return;
       }
-      area.innerHTML = KX.ui.card('5) ملخّص السعر',
+      area.innerHTML = KX.ui.card('5) ' + KX.i18n.t('review_order'),
+        (q.notices && q.notices.length ? KX.ui.alert(q.notices.map(e).join('<br>'), 'ok', '✅') : '') +
         (q.warnings.length ? KX.ui.alert(q.warnings.map(e).join('<br>'), 'warn', '⚠️') : '') +
         '<div class="grid grid-2">' +
           '<div>' +
             '<div class="panel mb"><div class="row row--between"><span>الكمية</span><b>' +
-              U().fmtNum(q.quantities.tons, 1) + ' طن</b></div>' +
+              U().fmtQty(q.quantities.quantity, q.quantities.unit) + '</b></div>' +
             '<div class="row row--between"><span>عدد الرحلات</span><b>' + q.quantities.trips +
               ' رحلة × ' + q.inputs.truck_name + '</b></div>' +
             '<div class="row row--between"><span>المورد</span><b>' + e(q.inputs.supplier_name) + '</b></div>' +
@@ -222,7 +246,8 @@ KX.viewsCustomer = (function () {
             (q.inputs.distance_km ? '<div class="row row--between"><span>المسافة التقريبية</span><b>' +
               q.inputs.distance_km + ' كم</b></div>' : '') +
             '</div>' +
-            '<button class="btn btn--primary btn--block btn--lg" id="submit-order">إرسال الطلب للمراجعة</button>' +
+            '<button class="btn btn--primary btn--block btn--lg" id="submit-order">' +
+            e(KX.i18n.t('submit_order')) + '</button>' +
             '<p class="muted" style="font-size:.8rem;margin-top:8px">لن يُطلب منك الدفع الآن. بعد تأكيد ' +
             'توفّر المادة والناقل سيصلك إشعار بأن الطلب جاهز للدفع.</p>' +
           '</div>' +
@@ -269,7 +294,7 @@ KX.viewsCustomer = (function () {
     L().renderApp(tabs + KX.ui.table([
       { key: 'order_no', label: 'رقم الطلب', render: (r) => '<a href="#/customer/orders/' + r.id + '"><b>' + e(r.order_no) + '</b></a>' },
       { key: 'm', label: 'المادة', render: (r) => e((r.price_snapshot || {}).inputs ? r.price_snapshot.inputs.material_name : '—') },
-      { key: 'tons', label: 'الكمية', num: true, render: (r) => U().fmtNum(r.tons, 1) + ' طن' },
+      { key: 'quantity', label: 'الكمية', num: true, render: (r) => U().fmtQty(r.quantity, r.unit) },
       { key: 'trips_planned', label: 'الرحلات', num: true },
       { key: 'total', label: 'الإجمالي', num: true, render: (r) => U().fmtOMR(r.total) },
       { key: 'status', label: 'الحالة', render: (r) => KX.ui.statusBadge(r.status) },
@@ -315,7 +340,8 @@ KX.viewsCustomer = (function () {
     const tripsHtml = trips.length ? KX.ui.table([
       { key: 'seq', label: 'الرحلة', render: (t) => '#' + t.seq },
       { key: 'status', label: 'الحالة', render: (t) => KX.ui.badge(KX.trips.TRIP_STATUS[t.status].label, KX.trips.TRIP_STATUS[t.status].tone) },
-      { key: 'planned_tons', label: 'الكمية', num: true, render: (t) => U().fmtNum(t.actual_tons || t.planned_tons, 1) + ' طن' },
+      { key: 'planned_qty', label: 'الكمية', num: true,
+        render: (t) => U().fmtQty(t.actual_qty || t.planned_qty, t.unit) },
       { key: 'u', label: 'آخر تحديث', render: (t) => U().relTime((t.timeline || []).slice(-1)[0].at) }
     ], trips, { compact: true }) : '<p class="muted">لم تُعيَّن الشاحنات بعد.</p>';
 
@@ -348,7 +374,7 @@ KX.viewsCustomer = (function () {
             row('رقم الطلب', order.order_no) +
             row('المادة', q ? q.inputs.material_name : '—') +
             row('المورد', supplier ? supplier.name : '—') +
-            row('الكمية', U().fmtNum(order.tons, 1) + ' طن') +
+            row('الكمية', U().fmtQty(order.quantity, order.unit)) +
             row('الرحلات', order.trips_planned + ' × ' + (q ? q.inputs.truck_name : '')) +
             row('موقع التوصيل', site ? site.label + ' — ' + site.address : '—') +
             row('موعد التوصيل', U().fmtDateTime(order.scheduled_at)) +
@@ -622,7 +648,7 @@ KX.viewsCustomer = (function () {
           (profile && profile.company_name ? e(profile.company_name) + '<br>' : '') +
           '<span class="mono">' + e(U().fmtPhone(profile ? profile.phone : '')) + '</span></div>' +
         '<div><h4>الطلب</h4>' + e(inv.order_no) + '<br>' +
-          (order ? U().fmtNum(order.tons, 1) + ' طن • ' + order.trips_planned + ' رحلة' : '') + '</div>' +
+          (order ? U().fmtQty(order.quantity, order.unit) + ' • ' + order.trips_planned + ' رحلة' : '') + '</div>' +
       '</div>' +
       '<div class="panel">' +
         line('قيمة المواد', U().fmtOMR(inv.material_cost)) +
@@ -689,7 +715,8 @@ KX.viewsCustomer = (function () {
     document.getElementById('export-me').onclick = async function () {
       const orders = await KX.orders.forCustomer(p.id);
       U().download('my-data.csv', U().toCSV(orders.map((o) => ({
-        order_no: o.order_no, status: o.status, tons: o.tons, total: o.total, date: o.created_at
+        order_no: o.order_no, status: KX.orders.label(o.status),
+        quantity: o.quantity, unit: o.unit, total: o.total, date: o.created_at
       }))), 'text/csv');
     };
   }

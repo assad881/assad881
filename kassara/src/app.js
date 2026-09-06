@@ -95,8 +95,7 @@ KX.app = (function () {
   }
 
   async function boot() {
-    document.documentElement.lang = KX.i18n.getLang();
-    document.documentElement.dir = KX.config.i18n.dir;
+    KX.i18n.apply();          /* يضبط lang و dir والخط حسب اللغة المحفوظة */
 
     try {
       await KX.seed.run(false);

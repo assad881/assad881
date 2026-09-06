@@ -35,6 +35,13 @@ KX.util = (function () {
     }).format(Number(n) || 0);
   }
   const ceilDiv = (a, b) => (b > 0 ? Math.ceil(a / b) : 0);
+
+  /* الوحدة تأتي من المادة؛ لا تُفترض هنا */
+  const unitLabel = (u) => (KX.schema.UNITS[u || 'm3'] || u || '');
+  /* الكمية بلا كسر زائد: 18 م³ لا 18.0 م³ */
+  const fmtQty = (v, u) => new Intl.NumberFormat(NUM_LOCALE,
+    { minimumFractionDigits: 0, maximumFractionDigits: 1 }).format(Number(v) || 0) +
+    ' ' + unitLabel(u);
   const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
   const sum = (arr, f) => arr.reduce((s, x) => s + (f ? f(x) : x), 0);
 
@@ -252,7 +259,7 @@ KX.util = (function () {
     return round(2 * R * Math.asin(Math.sqrt(h)), 1);
   }
 
-  return { uid, nowISO, orderNo, round, money, fmtOMR, fmtNum, ceilDiv, clamp, sum,
+  return { uid, nowISO, orderNo, round, money, fmtOMR, fmtNum, unitLabel, fmtQty, ceilDiv, clamp, sum,
            fmtDate, fmtDateTime, relTime, daysBetween, addDays,
            normalizePhone, isValidPhone, fmtPhone, isValidCoords, validate,
            esc, $, $$, on, toast, confirmDialog,
