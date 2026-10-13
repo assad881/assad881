@@ -1,0 +1,3796 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="كسارة اكسبريس — تطبيق إدارة نقلات الكسارة: العملاء، المواد والأسعار، الذمم، المصروفات، سندات التسليم والتقارير. يعمل بدون إنترنت.">
+  <meta name="theme-color" content="#0b0e14">
+  <title>كسارة اكسبريس</title>
+  <style>
+/* ============================================================
+   كسارة اكسبريس — نظام التصميم
+   داكن افتراضيًا، فاتح اختياري، RTL أولًا، مناسب للجوال.
+   ============================================================ */
+
+:root {
+  color-scheme: dark;
+
+  --page: #0b0e14;
+  --surface-1: #141922;
+  --surface-2: #1a212c;
+  --surface-3: #222b38;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text-primary: #f2f5f9;
+  --text-secondary: #a9b4c4;
+  --text-muted: #74808f;
+  --grid: #232b36;
+  --axis: #38424f;
+
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+
+  --good: #0ca30c;
+  --good-text: #35c435;
+  --warning: #fab219;
+  --warning-text: #e8a100;
+  --critical: #d03b3b;
+  --critical-text: #ef6a6a;
+
+  --accent: #c98500;
+  --accent-ink: #1a1205;
+  --accent-soft: rgba(201, 133, 0, 0.16);
+  --good-soft: rgba(12, 163, 12, 0.14);
+  --critical-soft: rgba(208, 59, 59, 0.14);
+  --warning-soft: rgba(250, 178, 25, 0.14);
+
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.22);
+  --font: system-ui, -apple-system, "Segoe UI", "Noto Sans Arabic", "Tahoma", sans-serif;
+  --maxw: 1280px;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+  --page: #f5f6f8;
+  --surface-1: #ffffff;
+  --surface-2: #f7f8fa;
+  --surface-3: #eef1f5;
+  --border: rgba(11, 15, 22, 0.10);
+  --border-strong: rgba(11, 15, 22, 0.18);
+  --text-primary: #0b0f16;
+  --text-secondary: #4a5768;
+  --text-muted: #78828f;
+  --grid: #e6e9ee;
+  --axis: #c8cdd6;
+
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #4a3aa7;
+
+  --good-text: #006300;
+  --warning-text: #8a6400;
+  --critical-text: #b32626;
+  --accent: #a86f00;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(168, 111, 0, 0.10);
+  --shadow: 0 1px 2px rgba(11, 15, 22, 0.06), 0 8px 24px rgba(11, 15, 22, 0.06);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0;
+  background: var(--page);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+}
+body { padding-bottom: 78px; }
+@media (min-width: 900px) { body { padding-bottom: 0; } }
+
+button { font-family: inherit; }
+h1, h2, h3, h4 { margin: 0; font-weight: 650; letter-spacing: -0.01em; }
+.tnum { font-variant-numeric: tabular-nums; }
+.muted { color: var(--text-muted); }
+.small { font-size: 12.5px; }
+.tiny { font-size: 11.5px; }
+.big { font-size: 1.15em; font-weight: 650; }
+.pos, .good-text { color: var(--good-text); }
+.neg { color: var(--critical-text); }
+.warn { color: var(--warning-text); }
+.flat { color: var(--text-secondary); }
+.spacer { flex: 1 1 auto; }
+.ta-end { text-align: end; }
+.ta-center { text-align: center; }
+
+/* ---------------- الهيكل ---------------- */
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 14px; }
+
+.appbar {
+  position: sticky; top: 0; z-index: 40;
+  background: var(--page);
+  border-bottom: 1px solid var(--border);
+}
+.appbar-in { display: flex; align-items: center; gap: 8px; min-height: 58px; }
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.logo {
+  width: 38px; height: 38px; flex: 0 0 38px;
+  display: grid; place-items: center;
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 20px;
+}
+.brand-name { font-weight: 700; font-size: 16px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand-sub { font-size: 11.5px; color: var(--text-muted); }
+
+.tabs { position: sticky; top: 58px; z-index: 35; background: var(--page); border-bottom: 1px solid var(--border); }
+.tabs-in { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding: 6px 14px; }
+.tabs-in::-webkit-scrollbar { display: none; }
+.tab {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px; border-radius: 999px;
+  background: transparent; border: 1px solid transparent;
+  color: var(--text-secondary); font-size: 13.5px; font-weight: 600;
+  white-space: nowrap; cursor: pointer;
+}
+.tab i { font-style: normal; opacity: 0.8; }
+.tab:hover { background: var(--surface-2); color: var(--text-primary); }
+.tab.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+@media (max-width: 899px) { .tab span { display: none; } .tab { padding: 7px 11px; font-size: 15px; } }
+
+.view { padding: 14px 14px 28px; display: flex; flex-direction: column; gap: 14px; }
+
+.bottom-nav {
+  position: fixed; inset-inline: 0; bottom: 0; z-index: 45;
+  display: flex; justify-content: space-around;
+  background: var(--surface-1); border-top: 1px solid var(--border);
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+}
+@media (min-width: 900px) { .bottom-nav { display: none; } }
+.nav-btn {
+  flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: none; border: 0; color: var(--text-muted); font-size: 10.5px; cursor: pointer; padding: 4px 2px;
+}
+.nav-btn i { font-style: normal; font-size: 17px; }
+.nav-btn.active { color: var(--accent); }
+
+/* ---------------- أزرار ---------------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 14px; border-radius: var(--radius-sm);
+  background: var(--surface-3); color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  font-size: 13.5px; font-weight: 600; cursor: pointer;
+  white-space: nowrap;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.ghost { background: transparent; border-color: var(--border); color: var(--text-secondary); }
+.btn.ghost:hover { color: var(--text-primary); }
+.btn.danger { color: var(--critical-text); border-color: var(--critical); }
+.btn.primary.danger { background: var(--critical); color: #fff; }
+.btn.sm { padding: 6px 11px; font-size: 12.5px; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.divider-v { width: 1px; height: 22px; background: var(--border-strong); }
+
+.icon-btn {
+  width: 34px; height: 34px; flex: 0 0 34px;
+  display: grid; place-items: center;
+  border-radius: 10px; background: var(--surface-2);
+  border: 1px solid var(--border); color: var(--text-secondary);
+  font-size: 14px; cursor: pointer;
+}
+.icon-btn:hover { color: var(--text-primary); border-color: var(--border-strong); }
+
+.mini-btn {
+  padding: 4px 8px; border-radius: 7px;
+  background: var(--surface-3); border: 1px solid var(--border);
+  color: var(--text-secondary); font-size: 11.5px; cursor: pointer; white-space: nowrap;
+}
+.mini-btn:hover { color: var(--text-primary); border-color: var(--border-strong); }
+.mini-btn.danger:hover { color: var(--critical-text); border-color: var(--critical); }
+.row-actions { display: flex; gap: 4px; justify-content: flex-end; flex-wrap: wrap; }
+.back-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+/* ---------------- بطاقات ---------------- */
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+.card-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.card-title { font-weight: 680; font-size: 15px; }
+.card-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.sub-head { margin: 14px 0 8px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 13px; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.kpi-grid.tight { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); margin-bottom: 12px; }
+.kpi {
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 11px 12px;
+}
+.kpi-label { font-size: 11.5px; color: var(--text-muted); }
+.kpi-value { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-top: 2px; }
+.kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.grid-2-tight { display: grid; grid-template-columns: 1fr; gap: 12px; align-items: start; }
+@media (min-width: 900px) {
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-2-tight { grid-template-columns: minmax(240px, 0.8fr) 1.2fr; }
+}
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px 14px; }
+
+.chart { width: 100%; min-height: 70px; }
+.chart-empty { padding: 26px 10px; text-align: center; color: var(--text-muted); font-size: 12.5px; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; }
+.legend-item { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--text-secondary); }
+.legend-item i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+/* ---------------- جداول ---------------- */
+.table-wrap { overflow-x: auto; margin: 0 -14px; padding: 0 14px; }
+.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table th {
+  text-align: start; font-weight: 600; font-size: 11.5px; color: var(--text-muted);
+  padding: 7px 8px; border-bottom: 1px solid var(--border-strong); white-space: nowrap;
+}
+.table td { padding: 9px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.table tbody tr:hover { background: var(--surface-2); }
+.table tbody tr.clickable { cursor: pointer; }
+.table tfoot td {
+  padding: 9px 8px; font-weight: 650; font-size: 12.5px;
+  border-top: 1px solid var(--border-strong); color: var(--text-secondary);
+}
+@media (max-width: 720px) {
+  .hide-sm { display: none !important; }
+  .table { font-size: 12.5px; }
+  .table td, .table th { padding: 7px 6px; }
+}
+
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 999px;
+  background: var(--surface-3); border: 1px solid var(--border);
+  font-size: 11px; color: var(--text-secondary); white-space: nowrap;
+}
+.badge.good { background: var(--good-soft); color: var(--good-text); border-color: transparent; }
+.badge.warn { background: var(--warning-soft); color: var(--warning-text); border-color: transparent; }
+.badge.bad { background: var(--critical-soft); color: var(--critical-text); border-color: transparent; }
+
+.empty { padding: 28px 14px; text-align: center; }
+.empty-title { font-weight: 650; color: var(--text-secondary); }
+.empty-hint { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+
+.notice {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--accent);
+  border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px; color: var(--text-secondary);
+}
+.notice.warn { border-inline-start-color: var(--warning); }
+.notice.bad { border-inline-start-color: var(--critical); color: var(--critical-text); }
+.footer-note { text-align: center; color: var(--text-muted); font-size: 12px; padding: 10px 0 4px; }
+
+/* ---------------- فلاتر ونماذج ---------------- */
+.filter-bar {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 9px 10px;
+}
+.filter-field { display: flex; align-items: center; gap: 6px; }
+.filter-field.grow { flex: 1 1 180px; }
+.filter-label { font-size: 11.5px; color: var(--text-muted); white-space: nowrap; }
+
+input, select, textarea {
+  width: 100%;
+  background: var(--surface-2);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  padding: 8px 10px;
+  font-family: inherit; font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+textarea { resize: vertical; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
+input[type="date"], input[type="search"], input[type="number"] { min-width: 0; }
+.filter-field input, .filter-field select { width: auto; min-width: 120px; padding: 6px 9px; font-size: 12.5px; }
+.filter-field.grow input { width: 100%; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-grid.cols-3 { grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 720px) { .form-grid.cols-3 { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 520px) { .form-grid { grid-template-columns: 1fr; } }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field.span-2 { grid-column: 1 / -1; }
+.field-label { font-size: 11.5px; color: var(--text-muted); display: flex; gap: 3px; }
+.field-label.inline { font-size: 13px; color: var(--text-primary); }
+.field-label .req { color: var(--critical-text); }
+.field-hint { font-size: 11px; color: var(--text-muted); }
+.field.check { flex-direction: row; align-items: center; gap: 8px; }
+.field.check input { width: 17px; height: 17px; flex: 0 0 17px; }
+.field.invalid input, .field.invalid select, .field.invalid textarea { border-color: var(--critical); }
+
+.total-line {
+  margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border);
+  display: flex; justify-content: flex-end; gap: 8px; align-items: baseline;
+}
+
+/* ---------------- نوافذ وإشعارات ---------------- */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 90;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 18px 12px; overflow-y: auto;
+  backdrop-filter: blur(2px);
+}
+.modal {
+  background: var(--surface-1); border: 1px solid var(--border-strong);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  width: 100%; max-width: 440px; padding: 14px; margin: auto;
+}
+.modal.wide { max-width: 760px; }
+.modal-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.modal-body { max-height: 70vh; overflow-y: auto; }
+.modal-actions { display: flex; gap: 8px; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+
+.toasts { position: fixed; inset-inline: 0; bottom: 92px; z-index: 100; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+@media (min-width: 900px) { .toasts { bottom: 24px; } }
+.toast {
+  background: var(--surface-3); color: var(--text-primary);
+  border: 1px solid var(--border-strong); border-radius: 999px;
+  padding: 8px 16px; font-size: 13px; box-shadow: var(--shadow);
+  transition: opacity 0.25s ease; max-width: 90vw;
+}
+.toast.good { border-color: var(--good); color: var(--good-text); }
+.toast.bad { border-color: var(--critical); color: var(--critical-text); }
+
+/* ---------------- المستندات والطباعة ---------------- */
+.modal.doc-modal { max-width: 900px; }
+.doc-modal .modal-head { gap: 8px; }
+.doc-sheet { background: #fff; border-radius: 8px; overflow-x: auto; }
+
+.doc { color: #000; background: #fff; font-size: 12pt; padding: 10mm; min-width: 640px; }
+.doc-head { display: flex; justify-content: space-between; gap: 12mm; border-bottom: 2px solid #000; padding-bottom: 4mm; }
+.doc-name { font-size: 18pt; font-weight: 800; }
+.doc-name-en { font-size: 10pt; letter-spacing: 0.04em; }
+.doc-meta { display: flex; flex-direction: column; font-size: 9pt; margin-top: 1mm; }
+.doc-title-box { text-align: end; }
+.doc-title { font-size: 14pt; font-weight: 700; border: 1px solid #000; padding: 1mm 4mm; display: inline-block; }
+.doc-no { font-size: 10pt; margin-top: 1mm; }
+.doc-party { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2mm 6mm; margin: 5mm 0; }
+.doc-kv .k { font-size: 9pt; color: #444; display: block; }
+.doc-kv .v { font-size: 11pt; font-weight: 600; }
+.doc-sub { font-weight: 700; font-size: 12pt; margin: 6mm 0 2mm; border-bottom: 1px solid #000; }
+.doc-table { width: 100%; border-collapse: collapse; margin-top: 2mm; }
+.doc-table th, .doc-table td { border: 1px solid #000; padding: 1.6mm 2mm; font-size: 10.5pt; }
+.doc-table th { background: #eee; font-weight: 700; }
+.doc-table tfoot td { font-weight: 600; background: #f6f6f6; }
+.doc-table .strong { font-weight: 800; }
+.doc-amount { display: flex; justify-content: space-between; align-items: baseline; border: 1px solid #000; padding: 3mm; margin-top: 4mm; }
+.doc-amount .k { font-size: 10pt; }
+.doc-amount .big { font-size: 16pt; font-weight: 800; }
+.doc-words { margin-top: 3mm; font-size: 10.5pt; font-style: italic; }
+.doc-notes { margin-top: 3mm; font-size: 10pt; }
+.doc-signs { display: flex; justify-content: space-between; gap: 20mm; margin-top: 14mm; }
+.doc-signs > div { flex: 1 1 0; text-align: center; }
+.sign-line { border-top: 1px solid #000; margin-bottom: 1.5mm; }
+.sign-label { font-size: 9.5pt; }
+.doc-foot { margin-top: 8mm; text-align: center; font-size: 9.5pt; color: #333; }
+
+@media print {
+  /* تُطبع ورقة المستند وحدها: يختفي التطبيق وإطار النافذة وأزرارها */
+  body > #app, .toasts { display: none !important; }
+  html, body { background: #fff; }
+  .modal-backdrop { position: static; background: none; padding: 0; overflow: visible; backdrop-filter: none; }
+  .modal.doc-modal {
+    max-width: none; width: 100%; margin: 0; padding: 0;
+    background: #fff; border: 0; border-radius: 0; box-shadow: none;
+  }
+  .doc-modal .modal-head, .doc-modal .modal-actions { display: none !important; }
+  .doc-modal .modal-body { max-height: none; overflow: visible; }
+  .doc-sheet { overflow: visible; border-radius: 0; }
+  .doc { padding: 2mm; min-width: 0; }
+  @page { size: A4; margin: 10mm; }
+}
+
+  </style>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23c98500'/><path d='M12 46 L26 22 L36 38 L42 29 L52 46 Z' fill='%231a1205'/></svg>">
+</head>
+<body>
+  <div id="app">
+    <div style="padding:40px;text-align:center;color:#74808f;font-family:system-ui">جاري التحميل…</div>
+  </div>
+
+  <noscript>
+    <div style="padding:24px;text-align:center;color:#f2f5f9;font-family:system-ui">
+      هذا التطبيق يحتاج إلى تفعيل JavaScript في المتصفح.
+      <br>This app requires JavaScript to be enabled.
+    </div>
+  </noscript>
+
+  <!-- الأساس -->
+  <script>
+/* ===== assets/js/util.js ===== */
+/* كسارة اكسبريس — أدوات عامة */
+(function (root) {
+  'use strict';
+  const EX = (root.EX = root.EX || {});
+
+  const U = {
+    /* ---------- DOM ---------- */
+    $(sel, ctx) { return (ctx || document).querySelector(sel); },
+    $$(sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); },
+    el(tag, attrs, children) {
+      const n = document.createElement(tag);
+      if (attrs) {
+        Object.keys(attrs).forEach(function (k) {
+          const v = attrs[k];
+          if (v === null || v === undefined || v === false) return;
+          if (k === 'class') n.className = v;
+          else if (k === 'html') n.innerHTML = v;
+          else if (k === 'text') n.textContent = v;
+          else if (k === 'style' && typeof v === 'object') Object.assign(n.style, v);
+          else if (k.slice(0, 2) === 'on' && typeof v === 'function') n.addEventListener(k.slice(2), v);
+          else n.setAttribute(k, v);
+        });
+      }
+      (Array.isArray(children) ? children : children ? [children] : []).forEach(function (c) {
+        if (c === null || c === undefined || c === false) return;
+        n.appendChild(typeof c === 'string' || typeof c === 'number' ? document.createTextNode(String(c)) : c);
+      });
+      return n;
+    },
+    esc(s) {
+      return String(s === null || s === undefined ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    },
+    clear(node) { while (node.firstChild) node.removeChild(node.firstChild); return node; },
+
+    /* ---------- أرقام ----------
+       الريال العماني يُكتب بثلاث خانات عشرية (1 ر.ع = 1000 بيسة). */
+    num(v, d) { const n = Number(v); return isFinite(n) ? n : (d === undefined ? 0 : d); },
+    round(v, p) { const f = Math.pow(10, p === undefined ? 3 : p); return Math.round(U.num(v) * f) / f; },
+    clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, U.num(v))); },
+
+    // عزل ثنائي الاتجاه حتى تبقى الإشارة والعملة في مكانها الصحيح داخل نص عربي
+    iso(s) { return '⁦' + s + '⁩'; },
+
+    money(v, opts) {
+      opts = opts || {};
+      const d = opts.decimals === undefined ? 3 : opts.decimals;
+      const n = U.num(v);
+      const s = Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+      const body = (n < 0 ? '-' : '') + s + (opts.bare ? '' : ' ' + (opts.symbol || 'ر.ع'));
+      return U.iso(body);
+    },
+    money0(v) {
+      const n = U.num(v);
+      return U.iso((n < 0 ? '-' : '') + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' ر.ع');
+    },
+    qty(v, unitLabel) {
+      const n = U.num(v);
+      const s = n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+      return U.iso(s + (unitLabel ? ' ' + unitLabel : ''));
+    },
+    pct(v, p) { return U.iso(U.num(v).toFixed(p === undefined ? 1 : p) + '%'); },
+    sign(v) { return U.num(v) > 0 ? 'pos' : U.num(v) < 0 ? 'neg' : 'flat'; },
+
+    /* ---------- تواريخ ---------- */
+    today() { return U.dateKey(new Date()); },
+    dateKey(d) {
+      const x = d instanceof Date ? d : new Date(d);
+      const m = String(x.getMonth() + 1).padStart(2, '0');
+      const day = String(x.getDate()).padStart(2, '0');
+      return x.getFullYear() + '-' + m + '-' + day;
+    },
+    monthKey(dateStr) { return String(dateStr || '').slice(0, 7); },
+    addDays(dateStr, n) {
+      const d = new Date(dateStr + 'T00:00:00');
+      d.setDate(d.getDate() + n);
+      return U.dateKey(d);
+    },
+    daysBetween(a, b) {
+      const x = new Date(a + 'T00:00:00').getTime();
+      const y = new Date(b + 'T00:00:00').getTime();
+      return Math.round((y - x) / 86400000);
+    },
+    startOfMonth(dateStr) { return U.monthKey(dateStr) + '-01'; },
+    monthLabel(mk, lang) {
+      const names = lang === 'en'
+        ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        : ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+      const p = String(mk).split('-');
+      const i = U.num(p[1], 1) - 1;
+      return (names[i] || p[1]) + ' ' + p[0];
+    },
+    fmtDate(dateStr) { return U.iso(String(dateStr || '')); },
+    fmtTime(ts) {
+      const d = new Date(ts);
+      return U.iso(String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'));
+    },
+
+    /* ---------- متنوعة ---------- */
+    uid(prefix) {
+      return (prefix || 'id') + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    },
+    deepClone(o) { return JSON.parse(JSON.stringify(o)); },
+    sum(arr, fn) {
+      return arr.reduce(function (a, x) { return a + U.num(fn ? fn(x) : x); }, 0);
+    },
+    groupBy(arr, fn) {
+      const out = {};
+      arr.forEach(function (x) {
+        const k = fn(x);
+        (out[k] = out[k] || []).push(x);
+      });
+      return out;
+    },
+    sortBy(arr, fn, desc) {
+      return arr.slice().sort(function (a, b) {
+        const x = fn(a), y = fn(b);
+        if (x === y) return 0;
+        return (x > y ? 1 : -1) * (desc ? -1 : 1);
+      });
+    },
+    debounce(fn, ms) {
+      let t = null;
+      return function () {
+        const args = arguments, self = this;
+        clearTimeout(t);
+        t = setTimeout(function () { fn.apply(self, args); }, ms || 200);
+      };
+    },
+    normalizeAr(s) {
+      return String(s || '').trim().toLowerCase()
+        .replace(/[أإآ]/g, 'ا')
+        .replace(/ى/g, 'ي')
+        .replace(/ة/g, 'ه')
+        .replace(/[ً-ْ]/g, '');
+    },
+    match(haystack, needle) {
+      if (!needle) return true;
+      return U.normalizeAr(haystack).indexOf(U.normalizeAr(needle)) !== -1;
+    },
+
+    /* ---------- تصدير ---------- */
+    csv(rows) {
+      return '﻿' + rows.map(function (r) {
+        return r.map(function (c) {
+          const s = String(c === null || c === undefined ? '' : c);
+          return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        }).join(',');
+      }).join('\r\n');
+    },
+    download(filename, text, mime) {
+      try {
+        const blob = new Blob([text], { type: (mime || 'text/plain') + ';charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = U.el('a', { href: url, download: filename });
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () { a.remove(); URL.revokeObjectURL(url); }, 600);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+  };
+
+  EX.util = U;
+})(window);
+
+</script>
+  <script>
+/* ===== assets/js/i18n.js ===== */
+/* كسارة اكسبريس — القاموس (عربي / إنجليزي) */
+(function (root) {
+  'use strict';
+  const EX = (root.EX = root.EX || {});
+
+  const DICT = {
+    app_name: ['كسارة اكسبريس', 'Express Crusher'],
+    app_tagline: ['إدارة النقلات والعملاء والحسابات', 'Loads, customers & accounts'],
+
+    /* التنقل */
+    nav_dashboard: ['اليوم', 'Today'],
+    nav_loads: ['النقلات', 'Loads'],
+    nav_customers: ['العملاء', 'Customers'],
+    nav_payments: ['المدفوعات', 'Payments'],
+    nav_materials: ['المواد والأسعار', 'Materials'],
+    nav_trucks: ['الشاحنات', 'Trucks'],
+    nav_expenses: ['المصروفات', 'Expenses'],
+    nav_reports: ['التقارير', 'Reports'],
+    nav_settings: ['الإعدادات', 'Settings'],
+
+    /* عام */
+    add: ['إضافة', 'Add'],
+    edit: ['تعديل', 'Edit'],
+    save: ['حفظ', 'Save'],
+    cancel: ['إلغاء', 'Cancel'],
+    confirm: ['تأكيد', 'Confirm'],
+    close: ['إغلاق', 'Close'],
+    delete: ['حذف', 'Delete'],
+    search: ['بحث', 'Search'],
+    filter: ['تصفية', 'Filter'],
+    all: ['الكل', 'All'],
+    none: ['لا شيء', 'None'],
+    total: ['الإجمالي', 'Total'],
+    date: ['التاريخ', 'Date'],
+    from: ['من', 'From'],
+    to: ['إلى', 'To'],
+    notes: ['ملاحظات', 'Notes'],
+    actions: ['إجراءات', 'Actions'],
+    print: ['طباعة', 'Print'],
+    export_csv: ['تصدير CSV', 'Export CSV'],
+    no_data: ['لا توجد بيانات بعد', 'No data yet'],
+    empty_hint: ['ابدأ بإضافة أول سجل من الزر بالأعلى.', 'Start by adding your first record above.'],
+    required: ['حقل مطلوب', 'Required field'],
+    saved: ['تم الحفظ', 'Saved'],
+    deleted: ['تم الحذف', 'Deleted'],
+    today_label: ['اليوم', 'Today'],
+    this_month: ['هذا الشهر', 'This month'],
+    last_30: ['آخر 30 يومًا', 'Last 30 days'],
+    optional: ['اختياري', 'optional'],
+    active: ['مُفعّل', 'Active'],
+    inactive: ['موقوف', 'Inactive'],
+    rows: ['سجل', 'rows'],
+    delete_confirm: ['سيتم حذف هذا السجل نهائيًا. هل تريد المتابعة؟', 'This record will be permanently deleted. Continue?'],
+    language: ['اللغة', 'Language'],
+    theme: ['المظهر', 'Theme'],
+    dark: ['داكن', 'Dark'],
+    light: ['فاتح', 'Light'],
+
+    /* الوحدات */
+    unit: ['الوحدة', 'Unit'],
+    unit_ton: ['طن', 'ton'],
+    unit_load: ['نقلة', 'load'],
+    unit_m3: ['م³', 'm³'],
+
+    /* لوحة اليوم */
+    dash_title: ['ملخص اليوم', "Today's summary"],
+    kpi_loads_today: ['نقلات اليوم', 'Loads today'],
+    kpi_qty_today: ['كميات اليوم', 'Quantity today'],
+    kpi_revenue_today: ['إيراد اليوم', 'Revenue today'],
+    kpi_cash_today: ['المحصّل اليوم', 'Collected today'],
+    kpi_month_revenue: ['إيراد الشهر', 'Month revenue'],
+    kpi_month_expenses: ['مصروفات الشهر', 'Month expenses'],
+    kpi_month_profit: ['صافي الشهر', 'Month net'],
+    kpi_receivables: ['إجمالي الذمم', 'Receivables'],
+    quick_actions: ['إجراءات سريعة', 'Quick actions'],
+    new_load: ['نقلة جديدة', 'New load'],
+    new_payment: ['تسجيل دفعة', 'Record payment'],
+    new_expense: ['تسجيل مصروف', 'Record expense'],
+    today_loads: ['نقلات اليوم', "Today's loads"],
+    top_customers: ['أكبر العملاء (الشهر)', 'Top customers (month)'],
+    top_debtors: ['أعلى المديونيات', 'Highest balances'],
+    revenue_30: ['الإيراد اليومي — آخر 30 يومًا', 'Daily revenue — last 30 days'],
+    mix_month: ['توزيع الكميات على المواد (الشهر)', 'Quantity by material (month)'],
+
+    /* النقلات */
+    loads_title: ['سجل النقلات', 'Load register'],
+    load_no: ['رقم النقلة', 'Load #'],
+    customer: ['العميل', 'Customer'],
+    material: ['المادة', 'Material'],
+    truck: ['الشاحنة', 'Truck'],
+    driver: ['السائق', 'Driver'],
+    qty: ['الكمية', 'Qty'],
+    price: ['السعر', 'Price'],
+    unit_price: ['سعر الوحدة', 'Unit price'],
+    discount: ['خصم', 'Discount'],
+    site: ['الموقع / الوجهة', 'Site / destination'],
+    payment_type: ['نوع الدفع', 'Payment'],
+    pay_cash: ['نقدي', 'Cash'],
+    pay_credit: ['آجل', 'Credit'],
+    ticket: ['سند تسليم', 'Delivery note'],
+    net_weight: ['الوزن الصافي', 'Net weight'],
+    add_load: ['إضافة نقلة', 'Add load'],
+    edit_load: ['تعديل نقلة', 'Edit load'],
+    loads_count: ['عدد النقلات', 'Loads'],
+
+    /* العملاء */
+    customers_title: ['العملاء والذمم', 'Customers & balances'],
+    name: ['الاسم', 'Name'],
+    phone: ['الهاتف', 'Phone'],
+    area: ['المنطقة', 'Area'],
+    customer_type: ['التصنيف', 'Type'],
+    opening_balance: ['رصيد افتتاحي', 'Opening balance'],
+    balance: ['الرصيد المستحق', 'Balance due'],
+    statement: ['كشف حساب', 'Statement'],
+    add_customer: ['إضافة عميل', 'Add customer'],
+    edit_customer: ['تعديل عميل', 'Edit customer'],
+    special_prices: ['أسعار خاصة', 'Special prices'],
+    special_prices_hint: ['اتركه فارغًا لاستخدام سعر قائمة الأسعار.', 'Leave blank to use the price list.'],
+    last_load: ['آخر نقلة', 'Last load'],
+    debit: ['مدين', 'Debit'],
+    credit_col: ['دائن', 'Credit'],
+    running: ['الرصيد', 'Running'],
+    aging: ['أعمار الذمم', 'Receivables aging'],
+    aging_0: ['0–30 يومًا', '0–30 days'],
+    aging_31: ['31–60 يومًا', '31–60 days'],
+    aging_61: ['61–90 يومًا', '61–90 days'],
+    aging_90: ['أكثر من 90 يومًا', 'Over 90 days'],
+    settled: ['مسدّد', 'Settled'],
+
+    /* المدفوعات */
+    payments_title: ['المدفوعات المحصّلة', 'Payments received'],
+    amount: ['المبلغ', 'Amount'],
+    method: ['طريقة الدفع', 'Method'],
+    m_cash: ['نقد', 'Cash'],
+    m_bank: ['تحويل بنكي', 'Bank transfer'],
+    m_cheque: ['شيك', 'Cheque'],
+    ref: ['المرجع', 'Reference'],
+    add_payment: ['إضافة دفعة', 'Add payment'],
+    receipt: ['سند قبض', 'Receipt'],
+
+    /* المواد */
+    materials_title: ['المواد وقائمة الأسعار', 'Materials & price list'],
+    add_material: ['إضافة مادة', 'Add material'],
+    default_price: ['السعر الافتراضي', 'Default price'],
+    sold_qty: ['الكمية المبيعة', 'Qty sold'],
+    revenue: ['الإيراد', 'Revenue'],
+
+    /* الشاحنات */
+    trucks_title: ['الشاحنات والسائقون', 'Trucks & drivers'],
+    plate: ['رقم اللوحة', 'Plate'],
+    capacity: ['الحمولة (طن)', 'Capacity (t)'],
+    add_truck: ['إضافة شاحنة', 'Add truck'],
+    trips: ['عدد النقلات', 'Trips'],
+    hauled: ['الكمية المنقولة', 'Hauled'],
+
+    /* المصروفات */
+    expenses_title: ['المصروفات التشغيلية', 'Operating expenses'],
+    category: ['البند', 'Category'],
+    add_expense: ['إضافة مصروف', 'Add expense'],
+    cat_diesel: ['ديزل / وقود', 'Diesel / fuel'],
+    cat_maintenance: ['صيانة', 'Maintenance'],
+    cat_parts: ['قطع غيار', 'Spare parts'],
+    cat_salaries: ['رواتب وأجور', 'Salaries'],
+    cat_rent: ['إيجارات ورسوم', 'Rent & fees'],
+    cat_explosives: ['تفجير ونسف', 'Blasting'],
+    cat_electric: ['كهرباء وماء', 'Utilities'],
+    cat_other: ['أخرى', 'Other'],
+
+    /* التقارير */
+    reports_title: ['التقارير والتحليل', 'Reports & analysis'],
+    period: ['الفترة', 'Period'],
+    summary: ['الملخص', 'Summary'],
+    gross_revenue: ['إجمالي الإيراد', 'Gross revenue'],
+    total_expenses: ['إجمالي المصروفات', 'Total expenses'],
+    net_profit: ['صافي الربح', 'Net profit'],
+    margin: ['هامش الربح', 'Profit margin'],
+    collected: ['المحصّل', 'Collected'],
+    outstanding: ['غير محصّل', 'Outstanding'],
+    avg_load: ['متوسط قيمة النقلة', 'Avg load value'],
+    avg_price_ton: ['متوسط سعر الطن', 'Avg price / ton'],
+    by_material: ['حسب المادة', 'By material'],
+    by_customer: ['حسب العميل', 'By customer'],
+    by_truck: ['حسب الشاحنة', 'By truck'],
+    by_month: ['حسب الشهر', 'By month'],
+    rev_vs_exp: ['الإيراد مقابل المصروف', 'Revenue vs expenses'],
+    share: ['النسبة', 'Share'],
+    expenses_breakdown: ['توزيع المصروفات', 'Expense breakdown'],
+    daily_trend: ['الحركة اليومية', 'Daily trend'],
+
+    /* الإعدادات */
+    settings_title: ['الإعدادات', 'Settings'],
+    company: ['بيانات المؤسسة', 'Business details'],
+    company_name: ['اسم المؤسسة', 'Business name'],
+    company_phone: ['الهاتف', 'Phone'],
+    company_address: ['العنوان', 'Address'],
+    cr_no: ['السجل التجاري', 'CR number'],
+    vat_no: ['الرقم الضريبي', 'VAT number'],
+    vat_enabled: ['إضافة ضريبة القيمة المضافة على المستندات', 'Add VAT on documents'],
+    vat_rate: ['نسبة الضريبة %', 'VAT rate %'],
+    data: ['البيانات والنسخ الاحتياطي', 'Data & backup'],
+    export_all: ['تصدير جميع البيانات (JSON)', 'Export all data (JSON)'],
+    import_all: ['استيراد نسخة', 'Import backup'],
+    import_hint: ['الصق محتوى ملف النسخة الاحتياطية هنا:', 'Paste the backup file content here:'],
+    import_done: ['تم استيراد النسخة', 'Backup imported'],
+    import_bad: ['الملف غير صالح', 'Invalid file'],
+    sample_data: ['تحميل بيانات تجريبية', 'Load sample data'],
+    sample_hint: ['يضيف عملاء ونقلات لتجربة التطبيق. لا يحذف بياناتك.', 'Adds demo customers and loads so you can try the app. Your data is kept.'],
+    reset_all: ['حذف كل البيانات', 'Delete all data'],
+    reset_confirm: ['سيتم حذف كل العملاء والنقلات والمدفوعات نهائيًا. هل أنت متأكد؟', 'All customers, loads and payments will be permanently deleted. Are you sure?'],
+    storage_note: ['كل البيانات محفوظة في متصفحك فقط (localStorage) ولا تُرسل إلى أي خادم. صدّر نسخة احتياطية بين حين وآخر.',
+      'All data stays in your browser (localStorage) and is never sent to a server. Export a backup from time to time.'],
+    export_copy_hint: ['لم يسمح المتصفح بتنزيل الملف — انسخ النص التالي واحفظه بنفسك.',
+      'The browser blocked the download — copy the text below and save it yourself.'],
+    copy: ['نسخ', 'Copy'],
+    copied: ['تم النسخ', 'Copied'],
+
+    /* المستندات */
+    doc_ticket_title: ['سند تسليم مواد', 'Material Delivery Note'],
+    doc_invoice_title: ['فاتورة', 'Invoice'],
+    doc_statement_title: ['كشف حساب عميل', 'Customer Statement'],
+    doc_receipt_title: ['سند قبض', 'Payment Receipt'],
+    doc_no: ['رقم المستند', 'Document #'],
+    doc_subtotal: ['الإجمالي قبل الضريبة', 'Subtotal'],
+    doc_vat: ['ضريبة القيمة المضافة', 'VAT'],
+    doc_grand: ['الإجمالي المستحق', 'Total due'],
+    doc_received_from: ['استلمنا من', 'Received from'],
+    doc_amount_words: ['المبلغ', 'Amount'],
+    doc_sig_customer: ['توقيع المستلم', 'Received by'],
+    doc_sig_company: ['عن المؤسسة', 'For the business'],
+    doc_prev_balance: ['رصيد سابق', 'Previous balance'],
+    doc_closing: ['الرصيد الختامي', 'Closing balance'],
+    doc_thanks: ['شكرًا لتعاملكم معنا', 'Thank you for your business']
+  };
+
+  const I = {
+    lang: 'ar',
+    setLang(l) { I.lang = l === 'en' ? 'en' : 'ar'; return I.lang; },
+    t(key, params) {
+      const row = DICT[key];
+      let s = row ? (I.lang === 'en' ? (row[1] || row[0]) : row[0]) : key;
+      if (params) {
+        Object.keys(params).forEach(function (k) {
+          s = s.replace(new RegExp('\\{' + k + '\\}', 'g'), params[k]);
+        });
+      }
+      return s;
+    },
+    dict: DICT
+  };
+
+  EX.i18n = I;
+  EX.t = function (k, p) { return I.t(k, p); };
+})(window);
+
+</script>
+  <script>
+/* ===== assets/js/store.js ===== */
+/* كسارة اكسبريس — الحالة والتخزين المحلي */
+(function (root) {
+  'use strict';
+  const EX = (root.EX = root.EX || {});
+  const U = EX.util;
+
+  const KEY = 'express_crusher_v1';
+
+  const DEFAULT_MATERIALS = [
+    { name: 'بحص 3/4', nameEn: 'Aggregate 3/4"', unit: 'ton', price: 2.5 },
+    { name: 'بحص 3/8', nameEn: 'Aggregate 3/8"', unit: 'ton', price: 2.8 },
+    { name: 'صبة (خرسانة ناشفة)', nameEn: 'Crusher run', unit: 'ton', price: 2.0 },
+    { name: 'بيس كورس', nameEn: 'Base course', unit: 'ton', price: 2.2 },
+    { name: 'سب بيس', nameEn: 'Sub-base', unit: 'ton', price: 1.8 },
+    { name: 'رمل مغسول', nameEn: 'Washed sand', unit: 'ton', price: 3.0 },
+    { name: 'غبار كسارة', nameEn: 'Crusher dust', unit: 'ton', price: 1.5 },
+    { name: 'دفان', nameEn: 'Backfill', unit: 'load', price: 15.0 },
+    { name: 'بلوك حجري', nameEn: 'Rock boulders', unit: 'ton', price: 2.0 }
+  ];
+
+  const EXPENSE_CATEGORIES = ['diesel', 'maintenance', 'parts', 'salaries', 'rent', 'explosives', 'electric', 'other'];
+
+  function defaultState() {
+    return {
+      version: 1,
+      createdAt: Date.now(),
+      settings: {
+        lang: 'ar',
+        theme: 'dark',
+        company: {
+          name: 'كسارة اكسبريس',
+          nameEn: 'Express Crusher',
+          phone: '',
+          address: '',
+          crNo: '',
+          vatNo: ''
+        },
+        vatEnabled: false,
+        vatRate: 5,
+        decimals: 3,
+        loadSeq: 1,
+        docSeq: 1
+      },
+      materials: DEFAULT_MATERIALS.map(function (m) {
+        return Object.assign({ id: U.uid('mat'), active: true }, m);
+      }),
+      customers: [],
+      trucks: [],
+      loads: [],
+      payments: [],
+      expenses: []
+    };
+  }
+
+  const Store = {
+    s: null,
+    listeners: [],
+
+    load() {
+      let raw = null;
+      try { raw = localStorage.getItem(KEY); } catch (e) { raw = null; }
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          Store.s = Store.migrate(parsed);
+        } catch (e) {
+          console.warn('state unreadable, starting fresh', e);
+          Store.s = defaultState();
+        }
+      } else {
+        Store.s = defaultState();
+      }
+      return Store.s;
+    },
+
+    /* نضمن وجود كل الحقول حتى لو جاءت النسخة من إصدار أقدم */
+    migrate(st) {
+      const base = defaultState();
+      const out = Object.assign({}, base, st || {});
+      out.settings = Object.assign({}, base.settings, st && st.settings);
+      out.settings.company = Object.assign({}, base.settings.company, st && st.settings && st.settings.company);
+      ['materials', 'customers', 'trucks', 'loads', 'payments', 'expenses'].forEach(function (k) {
+        if (!Array.isArray(out[k])) out[k] = base[k];
+      });
+      if (!out.materials.length) out.materials = base.materials;
+      return out;
+    },
+
+    save() {
+      try {
+        localStorage.setItem(KEY, JSON.stringify(Store.s));
+      } catch (e) {
+        console.warn('save failed', e);
+        if (EX.ui) EX.ui.toast('تعذّر الحفظ — مساحة التخزين ممتلئة؟', 'bad');
+      }
+      Store.listeners.forEach(function (fn) { try { fn(); } catch (e) { /* listener owns its errors */ } });
+      return Store.s;
+    },
+
+    onChange(fn) { Store.listeners.push(fn); },
+    settings() { return Store.s.settings; },
+
+    /* ---------- أدوات بحث ---------- */
+    customer(id) { return Store.s.customers.filter(function (c) { return c.id === id; })[0] || null; },
+    material(id) { return Store.s.materials.filter(function (m) { return m.id === id; })[0] || null; },
+    truck(id) { return Store.s.trucks.filter(function (t) { return t.id === id; })[0] || null; },
+
+    customerName(id) {
+      const c = Store.customer(id);
+      return c ? c.name : '—';
+    },
+    materialName(id) {
+      const m = Store.material(id);
+      if (!m) return '—';
+      return EX.i18n.lang === 'en' ? (m.nameEn || m.name) : m.name;
+    },
+    truckLabel(id) {
+      const t = Store.truck(id);
+      if (!t) return '—';
+      return t.plate + (t.driver ? ' · ' + t.driver : '');
+    },
+
+    /* السعر المعتمد لعميل ومادة: سعر خاص إن وُجد، وإلا سعر القائمة */
+    priceFor(customerId, materialId) {
+      const c = Store.customer(customerId);
+      const m = Store.material(materialId);
+      if (c && c.priceOverrides && c.priceOverrides[materialId] !== undefined && c.priceOverrides[materialId] !== '') {
+        return U.num(c.priceOverrides[materialId]);
+      }
+      return m ? U.num(m.price) : 0;
+    },
+
+    /* ---------- النقلات ---------- */
+    nextLoadNo() {
+      const n = U.num(Store.s.settings.loadSeq, 1);
+      Store.s.settings.loadSeq = n + 1;
+      return n;
+    },
+    nextDocNo() {
+      const n = U.num(Store.s.settings.docSeq, 1);
+      Store.s.settings.docSeq = n + 1;
+      return n;
+    },
+
+    addLoad(data) {
+      const rec = Object.assign({
+        id: U.uid('ld'),
+        no: Store.nextLoadNo(),
+        createdAt: Date.now()
+      }, data);
+      rec.total = EX.calc.loadTotal(rec);
+      Store.s.loads.push(rec);
+      Store.save();
+      return rec;
+    },
+    updateLoad(id, data) {
+      const rec = Store.s.loads.filter(function (l) { return l.id === id; })[0];
+      if (!rec) return null;
+      Object.assign(rec, data);
+      rec.total = EX.calc.loadTotal(rec);
+      Store.save();
+      return rec;
+    },
+    removeLoad(id) {
+      Store.s.loads = Store.s.loads.filter(function (l) { return l.id !== id; });
+      Store.save();
+    },
+
+    /* ---------- سجلات عامة ---------- */
+    upsert(collection, data, prefix) {
+      const arr = Store.s[collection];
+      if (data.id) {
+        const rec = arr.filter(function (x) { return x.id === data.id; })[0];
+        if (rec) { Object.assign(rec, data); Store.save(); return rec; }
+      }
+      const rec = Object.assign({ id: U.uid(prefix || collection.slice(0, 3)), createdAt: Date.now() }, data);
+      arr.push(rec);
+      Store.save();
+      return rec;
+    },
+    remove(collection, id) {
+      Store.s[collection] = Store.s[collection].filter(function (x) { return x.id !== id; });
+      Store.save();
+    },
+
+    /* ---------- النسخ الاحتياطي ---------- */
+    exportJSON() { return JSON.stringify(Store.s, null, 2); },
+    importJSON(text) {
+      const parsed = JSON.parse(text);
+      if (!parsed || typeof parsed !== 'object' || !parsed.settings) throw new Error('bad backup');
+      Store.s = Store.migrate(parsed);
+      Store.save();
+      return Store.s;
+    },
+    reset() {
+      const lang = Store.s.settings.lang, theme = Store.s.settings.theme;
+      const company = U.deepClone(Store.s.settings.company);
+      Store.s = defaultState();
+      Store.s.settings.lang = lang;
+      Store.s.settings.theme = theme;
+      Store.s.settings.company = company;
+      Store.save();
+    },
+
+    /* بيانات تجريبية لتجربة التطبيق فورًا */
+    loadSample() {
+      const st = Store.s;
+      const today = U.today();
+      const custs = [
+        { name: 'مؤسسة الظاهرة للمقاولات', phone: '99112233', area: 'عبري', type: 'credit' },
+        { name: 'شركة البركة للإنشاءات', phone: '97445566', area: 'ينقل', type: 'credit' },
+        { name: 'سالم بن محمد العبري', phone: '92778899', area: 'عبري', type: 'cash' },
+        { name: 'مشروع طريق ضنك', phone: '95001122', area: 'ضنك', type: 'credit' },
+        { name: 'بلدية عبري', phone: '25690000', area: 'عبري', type: 'credit', slow: true }
+      ].map(function (c) {
+        return Store.upsert('customers', Object.assign({ openingBalance: 0, priceOverrides: {}, notes: '', active: true }, c), 'cus');
+      });
+      const trucks = [
+        { plate: '1 ظ 4521', driver: 'خالد', phone: '91234567', capacity: 30 },
+        { plate: '2 ظ 7788', driver: 'يوسف', phone: '91234568', capacity: 30 },
+        { plate: '3 ظ 1199', driver: 'عبدالله', phone: '91234569', capacity: 25 }
+      ].map(function (t) {
+        return Store.upsert('trucks', Object.assign({ active: true, notes: '' }, t), 'trk');
+      });
+
+      // نقلات موزّعة على آخر 45 يومًا بنمط عمل واقعي
+      let seed = 7;
+      const rnd = function () { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+      for (let d = 44; d >= 0; d--) {
+        const date = U.addDays(today, -d);
+        const dow = new Date(date + 'T00:00:00').getDay();
+        if (dow === 5) continue;                      // الجمعة إجازة
+        const n = 3 + Math.floor(rnd() * 6);
+        for (let i = 0; i < n; i++) {
+          const cust = custs[Math.floor(rnd() * custs.length)];
+          const mat = st.materials[Math.floor(rnd() * Math.min(7, st.materials.length))];
+          const trk = trucks[Math.floor(rnd() * trucks.length)];
+          const qty = mat.unit === 'load' ? 1 : U.round(22 + rnd() * 10, 1);
+          Store.addLoad({
+            date: date,
+            customerId: cust.id,
+            materialId: mat.id,
+            truckId: trk.id,
+            qty: qty,
+            unit: mat.unit,
+            price: Store.priceFor(cust.id, mat.id),
+            discount: 0,
+            payment: cust.type === 'cash' ? 'cash' : (rnd() < 0.25 ? 'cash' : 'credit'),
+            site: '',
+            notes: ''
+          });
+        }
+        if (rnd() < 0.5) {
+          const cats = ['diesel', 'maintenance', 'parts', 'salaries', 'electric'];
+          Store.upsert('expenses', {
+            date: date,
+            category: cats[Math.floor(rnd() * cats.length)],
+            amount: U.round(80 + rnd() * 500, 3),
+            truckId: rnd() < 0.4 ? trucks[Math.floor(rnd() * trucks.length)].id : '',
+            notes: ''
+          }, 'exp');
+        }
+      }
+
+      // دفعات واقعية: يسدّد كل عميل جزءًا من آجله على دفعتين أو ثلاث،
+      // فيبقى رصيد مستحق موجب بدل أرصدة سالبة عشوائية
+      custs.forEach(function (cust) {
+        const due = U.sum(st.loads.filter(function (l) {
+          return l.customerId === cust.id && l.payment === 'credit';
+        }), function (l) { return l.total; });
+        if (due <= 0) return;
+        // عميل بطيء السداد يترك ذممًا متقادمة تُظهر جدول أعمار الذمم على حقيقته
+        const share = cust.slow ? 0 : cust.type === 'cash' ? 0.9 : 0.45 + rnd() * 0.4;
+        if (share === 0) return;
+        let left = U.round(due * share, 3);
+        const installments = 1 + Math.floor(rnd() * 3);
+        for (let k = 0; k < installments && left > 1; k++) {
+          const amount = k === installments - 1 ? left : U.round(left / (installments - k), 3);
+          left = U.round(left - amount, 3);
+          Store.upsert('payments', {
+            date: U.addDays(today, -Math.floor(rnd() * 40)),
+            customerId: cust.id,
+            amount: amount,
+            method: rnd() < 0.5 ? 'bank' : 'cash',
+            ref: '',
+            notes: ''
+          }, 'pay');
+        }
+      });
+
+      Store.save();
+    },
+
+    EXPENSE_CATEGORIES: EXPENSE_CATEGORIES
+  };
+
+  EX.store = Store;
+})(window);
+
+</script>
+  <script>
+/* ===== assets/js/calc.js ===== */
+/* كسارة اكسبريس — محرّك الحسابات والتقارير
+   قاعدة الحساب:
+     النقلة النقدية  = إيراد + تحصيل فوري (لا تدخل الذمم)
+     النقلة الآجلة   = إيراد + مدين على العميل (تدخل الذمم)
+     الدفعة          = تحصيل يسدّد أقدم نقلة آجلة أولًا (FIFO)
+*/
+(function (root) {
+  'use strict';
+  const EX = (root.EX = root.EX || {});
+  const U = EX.util;
+
+  const C = {
+    loadTotal(l) {
+      const gross = U.num(l.qty) * U.num(l.price);
+      return U.round(Math.max(0, gross - U.num(l.discount)), 3);
+    },
+
+    /* ---------- فلترة ---------- */
+    inRange(dateStr, from, to) {
+      if (from && dateStr < from) return false;
+      if (to && dateStr > to) return false;
+      return true;
+    },
+    loads(filter) {
+      filter = filter || {};
+      return EX.store.s.loads.filter(function (l) {
+        if (!C.inRange(l.date, filter.from, filter.to)) return false;
+        if (filter.customerId && l.customerId !== filter.customerId) return false;
+        if (filter.materialId && l.materialId !== filter.materialId) return false;
+        if (filter.truckId && l.truckId !== filter.truckId) return false;
+        if (filter.payment && l.payment !== filter.payment) return false;
+        if (filter.q) {
+          const hay = [EX.store.customerName(l.customerId), EX.store.materialName(l.materialId),
+            EX.store.truckLabel(l.truckId), l.site, l.notes, 'ن' + l.no, String(l.no)].join(' ');
+          if (!U.match(hay, filter.q)) return false;
+        }
+        return true;
+      });
+    },
+    payments(filter) {
+      filter = filter || {};
+      return EX.store.s.payments.filter(function (p) {
+        if (!C.inRange(p.date, filter.from, filter.to)) return false;
+        if (filter.customerId && p.customerId !== filter.customerId) return false;
+        if (filter.q && !U.match([EX.store.customerName(p.customerId), p.ref, p.notes].join(' '), filter.q)) return false;
+        return true;
+      });
+    },
+    expenses(filter) {
+      filter = filter || {};
+      return EX.store.s.expenses.filter(function (e) {
+        if (!C.inRange(e.date, filter.from, filter.to)) return false;
+        if (filter.category && e.category !== filter.category) return false;
+        if (filter.q && !U.match([EX.t('cat_' + e.category), e.notes, EX.store.truckLabel(e.truckId)].join(' '), filter.q)) return false;
+        return true;
+      });
+    },
+
+    /* ---------- أرصدة العملاء ---------- */
+    // الرصيد = الافتتاحي + مجموع النقلات الآجلة − مجموع الدفعات
+    customerBalance(customerId) {
+      const c = EX.store.customer(customerId);
+      const opening = c ? U.num(c.openingBalance) : 0;
+      const credit = U.sum(EX.store.s.loads.filter(function (l) {
+        return l.customerId === customerId && l.payment === 'credit';
+      }), function (l) { return l.total; });
+      const paid = U.sum(EX.store.s.payments.filter(function (p) {
+        return p.customerId === customerId;
+      }), function (p) { return p.amount; });
+      return U.round(opening + credit - paid, 3);
+    },
+
+    totalReceivables() {
+      return U.round(U.sum(EX.store.s.customers, function (c) {
+        return Math.max(0, C.customerBalance(c.id));
+      }), 3);
+    },
+
+    /* كشف حساب: سطر لكل نقلة آجلة ودفعة، مرتبًا بالتاريخ مع رصيد متحرك */
+    statement(customerId, from, to) {
+      const c = EX.store.customer(customerId);
+      const opening = c ? U.num(c.openingBalance) : 0;
+      const rows = [];
+      EX.store.s.loads.forEach(function (l) {
+        if (l.customerId !== customerId || l.payment !== 'credit') return;
+        rows.push({
+          date: l.date, kind: 'load', ref: 'ن' + l.no,
+          desc: EX.store.materialName(l.materialId) + ' · ' + U.qty(l.qty, EX.t('unit_' + (l.unit === 'm3' ? 'm3' : l.unit))),
+          debit: U.num(l.total), credit: 0, id: l.id
+        });
+      });
+      EX.store.s.payments.forEach(function (p) {
+        if (p.customerId !== customerId) return;
+        rows.push({
+          date: p.date, kind: 'payment', ref: p.ref || '',
+          desc: EX.t('receipt') + ' · ' + EX.t('m_' + p.method),
+          debit: 0, credit: U.num(p.amount), id: p.id
+        });
+      });
+      rows.sort(function (a, b) {
+        if (a.date === b.date) return a.kind === 'load' ? -1 : 1;
+        return a.date < b.date ? -1 : 1;
+      });
+      let bal = opening;
+      let openingForPeriod = opening;
+      const out = [];
+      rows.forEach(function (r) {
+        const before = bal;
+        bal = U.round(bal + r.debit - r.credit, 3);
+        if (!C.inRange(r.date, from, to)) {
+          openingForPeriod = bal;
+          return;
+        }
+        out.push(Object.assign({}, r, { balance: bal, balanceBefore: before }));
+      });
+      return { opening: openingForPeriod, rows: out, closing: bal };
+    },
+
+    /* أعمار الذمم: تُسدَّد الدفعات على أقدم نقلة آجلة أولًا */
+    aging(asOf) {
+      asOf = asOf || U.today();
+      const buckets = { b0: 0, b31: 0, b61: 0, b90: 0, total: 0 };
+      const perCustomer = {};
+      EX.store.s.customers.forEach(function (c) {
+        let pool = U.sum(EX.store.s.payments.filter(function (p) { return p.customerId === c.id; }),
+          function (p) { return p.amount; });
+        // الرصيد الافتتاحي أقدم بند، فيُسدَّد أولًا
+        let opening = U.num(c.openingBalance);
+        const applied = Math.min(pool, opening);
+        opening -= applied;
+        pool -= applied;
+        const open = U.sortBy(EX.store.s.loads.filter(function (l) {
+          return l.customerId === c.id && l.payment === 'credit';
+        }), function (l) { return l.date; });
+        const row = { b0: 0, b31: 0, b61: 0, b90: 0, total: 0 };
+        if (opening > 0) { row.b90 += opening; }
+        open.forEach(function (l) {
+          let due = U.num(l.total);
+          const take = Math.min(pool, due);
+          due -= take;
+          pool -= take;
+          if (due <= 0.0005) return;
+          const age = U.daysBetween(l.date, asOf);
+          if (age <= 30) row.b0 += due;
+          else if (age <= 60) row.b31 += due;
+          else if (age <= 90) row.b61 += due;
+          else row.b90 += due;
+        });
+        row.total = U.round(row.b0 + row.b31 + row.b61 + row.b90, 3);
+        if (row.total > 0.0005) {
+          perCustomer[c.id] = row;
+          buckets.b0 += row.b0; buckets.b31 += row.b31; buckets.b61 += row.b61; buckets.b90 += row.b90;
+        }
+      });
+      ['b0', 'b31', 'b61', 'b90'].forEach(function (k) { buckets[k] = U.round(buckets[k], 3); });
+      buckets.total = U.round(buckets.b0 + buckets.b31 + buckets.b61 + buckets.b90, 3);
+      return { buckets: buckets, perCustomer: perCustomer };
+    },
+
+    /* ---------- ملخصات ---------- */
+    // الكميات: الطن والمتر المكعب يُجمعان كوحدات، والنقلات تُعدّ بعدد النقلات
+    qtySummary(loads) {
+      const out = { ton: 0, m3: 0, load: 0, trips: loads.length };
+      loads.forEach(function (l) {
+        const u = l.unit === 'm3' ? 'm3' : l.unit === 'load' ? 'load' : 'ton';
+        out[u] += U.num(l.qty);
+      });
+      ['ton', 'm3', 'load'].forEach(function (k) { out[k] = U.round(out[k], 2); });
+      return out;
+    },
+    qtyLabel(sum) {
+      const parts = [];
+      if (sum.ton) parts.push(U.qty(sum.ton, EX.t('unit_ton')));
+      if (sum.m3) parts.push(U.qty(sum.m3, EX.t('unit_m3')));
+      if (sum.load) parts.push(U.qty(sum.load, EX.t('unit_load')));
+      return parts.length ? parts.join(' · ') : U.qty(0, EX.t('unit_ton'));
+    },
+
+    summary(from, to) {
+      const loads = C.loads({ from: from, to: to });
+      const pays = C.payments({ from: from, to: to });
+      const exps = C.expenses({ from: from, to: to });
+      const revenue = U.round(U.sum(loads, function (l) { return l.total; }), 3);
+      const cashLoads = U.round(U.sum(loads.filter(function (l) { return l.payment === 'cash'; }),
+        function (l) { return l.total; }), 3);
+      const creditLoads = U.round(revenue - cashLoads, 3);
+      const paid = U.round(U.sum(pays, function (p) { return p.amount; }), 3);
+      const expenses = U.round(U.sum(exps, function (e) { return e.amount; }), 3);
+      const q = C.qtySummary(loads);
+      const tons = q.ton;
+      return {
+        from: from, to: to,
+        loads: loads, payments: pays, expenses: exps,
+        trips: loads.length,
+        qty: q,
+        revenue: revenue,
+        cashLoads: cashLoads,
+        creditLoads: creditLoads,
+        paymentsTotal: paid,
+        collected: U.round(cashLoads + paid, 3),
+        expensesTotal: expenses,
+        net: U.round(revenue - expenses, 3),
+        margin: revenue > 0 ? U.round((revenue - expenses) / revenue * 100, 1) : 0,
+        avgLoad: loads.length ? U.round(revenue / loads.length, 3) : 0,
+        avgPricePerTon: tons > 0 ? U.round(U.sum(loads.filter(function (l) {
+          return (l.unit || 'ton') === 'ton';
+        }), function (l) { return l.total; }) / tons, 3) : 0
+      };
+    },
+
+    /* سلسلة يومية للرسم: الإيراد والمصروف لكل يوم في المدى */
+    dailySeries(days) {
+      days = days || 30;
+      const to = U.today();
+      const from = U.addDays(to, -(days - 1));
+      const rev = {}, exp = {};
+      C.loads({ from: from, to: to }).forEach(function (l) {
+        rev[l.date] = U.num(rev[l.date]) + U.num(l.total);
+      });
+      C.expenses({ from: from, to: to }).forEach(function (e) {
+        exp[e.date] = U.num(exp[e.date]) + U.num(e.amount);
+      });
+      const out = [];
+      for (let i = 0; i < days; i++) {
+        const d = U.addDays(from, i);
+        out.push({ date: d, revenue: U.round(rev[d] || 0, 3), expense: U.round(exp[d] || 0, 3) });
+      }
+      return out;
+    },
+
+    monthlySeries(months) {
+      months = months || 12;
+      const now = new Date();
+      const out = [];
+      for (let i = months - 1; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const mk = U.dateKey(d).slice(0, 7);
+        const from = mk + '-01';
+        const to = U.dateKey(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+        const loads = C.loads({ from: from, to: to });
+        out.push({
+          month: mk,
+          revenue: U.round(U.sum(loads, function (l) { return l.total; }), 3),
+          expense: U.round(U.sum(C.expenses({ from: from, to: to }), function (e) { return e.amount; }), 3),
+          trips: loads.length,
+          tons: C.qtySummary(loads).ton
+        });
+      }
+      return out;
+    },
+
+    /* تجميع عام: by = 'materialId' | 'customerId' | 'truckId' */
+    breakdown(loads, by) {
+      const groups = U.groupBy(loads, function (l) { return l[by] || ''; });
+      const rows = Object.keys(groups).map(function (k) {
+        const g = groups[k];
+        const q = C.qtySummary(g);
+        return {
+          key: k,
+          label: by === 'materialId' ? EX.store.materialName(k)
+            : by === 'customerId' ? EX.store.customerName(k)
+              : EX.store.truckLabel(k),
+          trips: g.length,
+          qty: q,
+          tons: q.ton,
+          revenue: U.round(U.sum(g, function (l) { return l.total; }), 3)
+        };
+      });
+      const total = U.sum(rows, function (r) { return r.revenue; });
+      rows.forEach(function (r) { r.share = total > 0 ? U.round(r.revenue / total * 100, 1) : 0; });
+      return U.sortBy(rows, function (r) { return r.revenue; }, true);
+    },
+
+    expenseBreakdown(exps) {
+      const groups = U.groupBy(exps, function (e) { return e.category || 'other'; });
+      const rows = Object.keys(groups).map(function (k) {
+        return {
+          key: k,
+          label: EX.t('cat_' + k),
+          amount: U.round(U.sum(groups[k], function (e) { return e.amount; }), 3),
+          count: groups[k].length
+        };
+      });
+      const total = U.sum(rows, function (r) { return r.amount; });
+      rows.forEach(function (r) { r.share = total > 0 ? U.round(r.amount / total * 100, 1) : 0; });
+      return U.sortBy(rows, function (r) { return r.amount; }, true);
+    },
+
+    /* ---------- ضريبة ---------- */
+    vat(amount) {
+      const st = EX.store.settings();
+      if (!st.vatEnabled) return { base: U.round(amount, 3), vat: 0, total: U.round(amount, 3), rate: 0 };
+      const rate = U.num(st.vatRate);
+      const vat = U.round(amount * rate / 100, 3);
+      return { base: U.round(amount, 3), vat: vat, total: U.round(amount + vat, 3), rate: rate };
+    }
+  };
+
+  EX.calc = C;
+})(window);
+
+</script>
+  <script>
+/* ===== assets/js/charts.js ===== */
+/* كسارة اكسبريس — رسوم بيانية على canvas بدون مكتبات خارجية */
+(function (root) {
+  'use strict';
+  const EX = (root.EX = root.EX || {});
+  const U = EX.util;
+
+  function cssVar(name, fallback) {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return v || fallback;
+  }
+
+  function palette() {
+    return {
+      ink: cssVar('--text-primary', '#f2f5f9'),
+      muted: cssVar('--text-muted', '#74808f'),
+      grid: cssVar('--grid', '#232b36'),
+      axis: cssVar('--axis', '#38424f'),
+      series: [1, 2, 3, 4, 5, 6, 7].map(function (i) { return cssVar('--series-' + i, '#3987e5'); }),
+      good: cssVar('--good', '#0ca30c'),
+      critical: cssVar('--critical', '#d03b3b'),
+      surface: cssVar('--surface-1', '#141922')
+    };
+  }
+
+  /* يهيّئ canvas بدقة الشاشة ويعيد السياق والأبعاد المنطقية */
+  function setup(host, height) {
+    const dpr = root.devicePixelRatio || 1;
+    const w = Math.max(240, host.clientWidth || 320);
+    const h = height || 200;
+    const cv = U.el('canvas', { style: { width: '100%', height: h + 'px', display: 'block' } });
+    cv.width = Math.round(w * dpr);
+    cv.height = Math.round(h * dpr);
+    U.clear(host).appendChild(cv);
+    const ctx = cv.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.font = '11px ' + cssVar('--font', 'system-ui');
+    ctx.textBaseline = 'middle';
+    return { ctx: ctx, w: w, h: h, p: palette() };
+  }
+
+  function niceMax(v) {
+    if (v <= 0) return 10;
+    const mag = Math.pow(10, Math.floor(Math.log10(v)));
+    const n = v / mag;
+    const step = n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10;
+    return step * mag;
+  }
+
+  function shortNum(v) {
+    const n = U.num(v);
+    const a = Math.abs(n);
+    if (a >= 1000000) return (n / 1000000).toFixed(a >= 10000000 ? 0 : 1) + 'M';
+    if (a >= 1000) return (n / 1000).toFixed(a >= 10000 ? 0 : 1) + 'k';
+    if (a >= 100) return n.toFixed(0);
+    return n.toFixed(a >= 10 ? 0 : 1);
+  }
+
+  const Charts = {
+    empty(host, msg) {
+      U.clear(host).appendChild(U.el('div', { class: 'chart-empty', text: msg || EX.t('no_data') }));
+    },
+
+    /* خط/مساحة: data = [{label, value}] مع سلسلة ثانية اختيارية value2 */
+    line(host, data, opts) {
+      opts = opts || {};
+      if (!data || !data.length) return Charts.empty(host, opts.emptyMsg);
+      const s = setup(host, opts.height || 190);
+      const ctx = s.ctx, p = s.p;
+      const padL = 44, padR = 10, padT = 12, padB = 22;
+      const plotW = s.w - padL - padR, plotH = s.h - padT - padB;
+      const vals = data.map(function (d) { return U.num(d.value); })
+        .concat(opts.second ? data.map(function (d) { return U.num(d.value2); }) : []);
+      const max = niceMax(Math.max.apply(null, vals.concat([0])));
+
+      // شبكة أفقية + محور القيم
+      ctx.strokeStyle = p.grid; ctx.lineWidth = 1; ctx.fillStyle = p.muted;
+      ctx.textAlign = 'right';
+      for (let i = 0; i <= 4; i++) {
+        const y = padT + plotH - (plotH * i / 4);
+        ctx.beginPath(); ctx.moveTo(padL, y + 0.5); ctx.lineTo(padL + plotW, y + 0.5); ctx.stroke();
+        ctx.fillText(shortNum(max * i / 4), padL - 6, y);
+      }
+
+      const x = function (i) { return padL + (data.length === 1 ? plotW / 2 : plotW * i / (data.length - 1)); };
+      const y = function (v) { return padT + plotH - plotH * (U.num(v) / (max || 1)); };
+
+      const drawSeries = function (key, color, fill) {
+        ctx.beginPath();
+        data.forEach(function (d, i) {
+          const px = x(i), py = y(d[key]);
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        });
+        ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.stroke();
+        if (fill) {
+          ctx.lineTo(x(data.length - 1), padT + plotH);
+          ctx.lineTo(x(0), padT + plotH);
+          ctx.closePath();
+          const g = ctx.createLinearGradient(0, padT, 0, padT + plotH);
+          g.addColorStop(0, color + '33');
+          g.addColorStop(1, color + '00');
+          ctx.fillStyle = g; ctx.fill();
+        }
+      };
+      drawSeries('value', opts.color || p.series[0], opts.fill !== false);
+      if (opts.second) drawSeries('value2', opts.color2 || p.series[1], false);
+
+      // تسميات المحور الأفقي: أول ومنتصف وآخر نقطة فقط لتبقى مقروءة
+      ctx.fillStyle = p.muted; ctx.textAlign = 'center';
+      [0, Math.floor((data.length - 1) / 2), data.length - 1].forEach(function (i, k, arr) {
+        if (arr.indexOf(i) !== k) return;
+        const d = data[i];
+        if (!d) return;
+        ctx.fillText(d.label, U.clamp(x(i), padL + 18, padL + plotW - 18), s.h - padB / 2 - 1);
+      });
+    },
+
+    /* أعمدة رأسية مجمّعة: data = [{label, value, value2}] */
+    bars(host, data, opts) {
+      opts = opts || {};
+      if (!data || !data.length) return Charts.empty(host, opts.emptyMsg);
+      const s = setup(host, opts.height || 190);
+      const ctx = s.ctx, p = s.p;
+      const padL = 44, padR = 10, padT = 12, padB = 26;
+      const plotW = s.w - padL - padR, plotH = s.h - padT - padB;
+      const two = !!opts.second;
+      const vals = data.map(function (d) { return U.num(d.value); })
+        .concat(two ? data.map(function (d) { return U.num(d.value2); }) : []);
+      const max = niceMax(Math.max.apply(null, vals.concat([0])));
+
+      ctx.strokeStyle = p.grid; ctx.fillStyle = p.muted; ctx.textAlign = 'right';
+      for (let i = 0; i <= 4; i++) {
+        const y = padT + plotH - (plotH * i / 4);
+        ctx.beginPath(); ctx.moveTo(padL, y + 0.5); ctx.lineTo(padL + plotW, y + 0.5); ctx.stroke();
+        ctx.fillText(shortNum(max * i / 4), padL - 6, y);
+      }
+
+      const slot = plotW / data.length;
+      const bw = Math.max(4, Math.min(28, slot * (two ? 0.34 : 0.6)));
+      data.forEach(function (d, i) {
+        const cx = padL + slot * (i + 0.5);
+        const draw = function (v, color, off) {
+          const hh = plotH * (U.num(v) / (max || 1));
+          ctx.fillStyle = color;
+          ctx.fillRect(cx + off - bw / 2, padT + plotH - hh, bw, Math.max(hh, v > 0 ? 1.5 : 0));
+        };
+        if (two) {
+          draw(d.value, opts.color || p.series[0], -bw / 2 - 1);
+          draw(d.value2, opts.color2 || p.series[1], bw / 2 + 1);
+        } else {
+          draw(d.value, d.color || opts.color || p.series[0], 0);
+        }
+        if (slot > 26 || data.length <= 12) {
+          ctx.fillStyle = p.muted; ctx.textAlign = 'center';
+          ctx.fillText(d.label, cx, s.h - padB / 2);
+        }
+      });
+    },
+
+    /* أعمدة أفقية — الأفضل للأسماء العربية الطويلة (عملاء / مواد) */
+    hbars(host, data, opts) {
+      opts = opts || {};
+      if (!data || !data.length) return Charts.empty(host, opts.emptyMsg);
+      const rowH = opts.rowH || 26;
+      const s = setup(host, Math.max(70, data.length * rowH + 10));
+      const ctx = s.ctx, p = s.p;
+      const max = Math.max.apply(null, data.map(function (d) { return U.num(d.value); }).concat([0.0001]));
+      const labelW = Math.min(150, Math.max(70, s.w * 0.34));
+      const valueW = 62;
+      const barW = Math.max(30, s.w - labelW - valueW - 12);
+      const rtl = document.documentElement.getAttribute('dir') !== 'ltr';
+
+      data.forEach(function (d, i) {
+        const y = 6 + i * rowH + rowH / 2 - 3;
+        const w = Math.max(2, barW * (U.num(d.value) / max));
+        const color = d.color || (opts.colors ? p.series[i % p.series.length] : (opts.color || p.series[0]));
+        if (rtl) {
+          ctx.textAlign = 'right';
+          ctx.fillStyle = p.ink;
+          ctx.fillText(String(d.label).slice(0, 26), s.w - 2, y);
+          ctx.fillStyle = color;
+          ctx.fillRect(s.w - labelW - w, y - 7, w, 14);
+          ctx.textAlign = 'left';
+          ctx.fillStyle = p.muted;
+          ctx.fillText(d.text || shortNum(d.value), 2, y);
+        } else {
+          ctx.textAlign = 'left';
+          ctx.fillStyle = p.ink;
+          ctx.fillText(String(d.label).slice(0, 26), 2, y);
+          ctx.fillStyle = color;
+          ctx.fillRect(labelW, y - 7, w, 14);
+          ctx.textAlign = 'right';
+          ctx.fillStyle = p.muted;
+          ctx.fillText(d.text || shortNum(d.value), s.w - 2, y);
+        }
+      });
+    },
+
+    /* حلقة: data = [{label, value}] */
+    donut(host, data, opts) {
+      opts = opts || {};
+      const items = (data || []).filter(function (d) { return U.num(d.value) > 0; });
+      if (!items.length) return Charts.empty(host, opts.emptyMsg);
+      const s = setup(host, opts.height || 190);
+      const ctx = s.ctx, p = s.p;
+      const total = U.sum(items, function (d) { return d.value; });
+      const cx = s.w / 2, cy = s.h / 2, r = Math.min(s.w, s.h) / 2 - 8, r2 = r * 0.6;
+      let a0 = -Math.PI / 2;
+      items.forEach(function (d, i) {
+        const a1 = a0 + Math.PI * 2 * (U.num(d.value) / total);
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, a0, a1);
+        ctx.arc(cx, cy, r2, a1, a0, true);
+        ctx.closePath();
+        ctx.fillStyle = d.color || p.series[i % p.series.length];
+        ctx.fill();
+        a0 = a1;
+      });
+      ctx.fillStyle = p.ink; ctx.textAlign = 'center';
+      ctx.font = '600 14px ' + cssVar('--font', 'system-ui');
+      ctx.fillText(shortNum(total), cx, cy - 6);
+      ctx.font = '10px ' + cssVar('--font', 'system-ui');
+      ctx.fillStyle = p.muted;
+      ctx.fillText(opts.centerLabel || 'ر.ع', cx, cy + 9);
+    },
+
+    legend(items) {
+      const p = palette();
+      return U.el('div', { class: 'legend' }, items.map(function (it, i) {
+        return U.el('span', { class: 'legend-item' }, [
+          U.el('i', { style: { background: it.color || p.series[i % p.series.length] } }),
+          U.el('span', { text: it.label })
+        ]);
+      }));
+    }
+  };
+
+  EX.charts = Charts;
+})(window);
+
+</script>
+  <script>
+/* ===== assets/js/print.js ===== */
+/* كسارة اكسبريس — المستندات القابلة للطباعة (سند تسليم، سند قبض، كشف حساب، تقرير) */
+(function (root) {
+  'use strict';
+  const EX = (root.EX = root.EX || {});
+  const U = EX.util;
+  const t = function (k, p) { return EX.t(k, p); };
+
+  /* ---------- تفقيط المبلغ بالعربية ---------- */
+  const ONES = ['', 'واحد', 'اثنان', 'ثلاثة', 'أربعة', 'خمسة', 'ستة', 'سبعة', 'ثمانية', 'تسعة',
+    'عشرة', 'أحد عشر', 'اثنا عشر', 'ثلاثة عشر', 'أربعة عشر', 'خمسة عشر', 'ستة عشر', 'سبعة عشر', 'ثمانية عشر', 'تسعة عشر'];
+  const TENS = ['', '', 'عشرون', 'ثلاثون', 'أربعون', 'خمسون', 'ستون', 'سبعون', 'ثمانون', 'تسعون'];
+  const HUNDREDS = ['', 'مئة', 'مئتان', 'ثلاثمئة', 'أربعمئة', 'خمسمئة', 'ستمئة', 'سبعمئة', 'ثمانمئة', 'تسعمئة'];
+
+  function under1000(n) {
+    const parts = [];
+    const h = Math.floor(n / 100), r = n % 100;
+    if (h) parts.push(HUNDREDS[h]);
+    if (r) {
+      if (r < 20) parts.push(ONES[r]);
+      else {
+        const o = r % 10, tn = Math.floor(r / 10);
+        parts.push(o ? ONES[o] + ' و' + TENS[tn] : TENS[tn]);
+      }
+    }
+    return parts.join(' و');
+  }
+
+  function words(n) {
+    n = Math.floor(Math.abs(U.num(n)));
+    if (n === 0) return 'صفر';
+    const groups = [
+      { div: 1000000000, one: 'مليار', two: 'ملياران', many: 'مليارات' },
+      { div: 1000000, one: 'مليون', two: 'مليونان', many: 'ملايين' },
+      { div: 1000, one: 'ألف', two: 'ألفان', many: 'آلاف' }
+    ];
+    const parts = [];
+    let rest = n;
+    groups.forEach(function (g) {
+      const c = Math.floor(rest / g.div);
+      rest = rest % g.div;
+      if (!c) return;
+      if (c === 1) parts.push(g.one);
+      else if (c === 2) parts.push(g.two);
+      else if (c <= 10) parts.push(under1000(c) + ' ' + g.many);
+      else parts.push(under1000(c) + ' ' + g.one);
+    });
+    if (rest) parts.push(under1000(rest));
+    return parts.join(' و');
+  }
+
+  function amountWords(v) {
+    const n = U.round(Math.abs(U.num(v)), 3);
+    const rial = Math.floor(n);
+    const baisa = Math.round((n - rial) * 1000);
+    let s = words(rial) + ' ريال عماني';
+    if (baisa) s += ' و' + words(baisa) + ' بيسة';
+    return s + ' فقط';
+  }
+
+  /* ---------- عرض المستند ثم طباعته ----------
+     يُعرض المستند أولًا على الشاشة: بعض البيئات (مثل الإطارات المحمية)
+     لا تفتح نافذة الطباعة إطلاقًا، فتبقى المعاينة هي المخرج المضمون. */
+  function render(node) {
+    const m = EX.ui.modal({
+      title: '',
+      wide: true,
+      actions: false,
+      body: U.el('div', { class: 'doc-sheet' }, node)
+    });
+    m.body.parentNode.classList.add('doc-modal');
+    const head = m.body.parentNode.querySelector('.modal-head');
+    head.insertBefore(U.el('button', {
+      class: 'btn primary sm', text: t('print'),
+      onclick: function () {
+        try { root.print(); } catch (e) { EX.ui.toast('المتصفح لم يسمح بفتح نافذة الطباعة', 'bad'); }
+      }
+    }), head.firstChild);
+    return m;
+  }
+
+  function header(docTitle, docNo, date) {
+    const c = EX.store.settings().company;
+    return U.el('div', { class: 'doc-head' }, [
+      U.el('div', { class: 'doc-company' }, [
+        U.el('div', { class: 'doc-name', text: c.name || t('app_name') }),
+        c.nameEn ? U.el('div', { class: 'doc-name-en', text: c.nameEn }) : null,
+        U.el('div', { class: 'doc-meta' }, [
+          c.phone ? U.el('span', { text: 'هاتف: ' + U.iso(c.phone) }) : null,
+          c.address ? U.el('span', { text: c.address }) : null,
+          c.crNo ? U.el('span', { text: 'س.ت: ' + U.iso(c.crNo) }) : null,
+          c.vatNo ? U.el('span', { text: 'الرقم الضريبي: ' + U.iso(c.vatNo) }) : null
+        ])
+      ]),
+      U.el('div', { class: 'doc-title-box' }, [
+        U.el('div', { class: 'doc-title', text: docTitle }),
+        docNo ? U.el('div', { class: 'doc-no', text: t('doc_no') + ': ' + U.iso(String(docNo)) }) : null,
+        U.el('div', { class: 'doc-no', text: t('date') + ': ' + U.fmtDate(date) })
+      ])
+    ]);
+  }
+
+  function kv(label, value) {
+    return U.el('div', { class: 'doc-kv' }, [
+      U.el('span', { class: 'k', text: label }),
+      U.el('span', { class: 'v', text: value })
+    ]);
+  }
+
+  function signatures() {
+    return U.el('div', { class: 'doc-signs' }, [
+      U.el('div', {}, [U.el('div', { class: 'sign-line' }), U.el('div', { class: 'sign-label', text: t('doc_sig_customer') })]),
+      U.el('div', {}, [U.el('div', { class: 'sign-line' }), U.el('div', { class: 'sign-label', text: t('doc_sig_company') })])
+    ]);
+  }
+
+  function docTable(headers, rows, footRows) {
+    return U.el('table', { class: 'doc-table' }, [
+      U.el('thead', {}, U.el('tr', {}, headers.map(function (h) {
+        return U.el('th', { class: h.align === 'end' ? 'ta-end' : '', text: h.label });
+      }))),
+      U.el('tbody', {}, rows.map(function (r) {
+        return U.el('tr', {}, r.map(function (cell, i) {
+          return U.el('td', { class: headers[i] && headers[i].align === 'end' ? 'ta-end tnum' : '', text: String(cell) });
+        }));
+      })),
+      footRows ? U.el('tfoot', {}, footRows.map(function (r) {
+        return U.el('tr', {}, r.map(function (cell, i) {
+          return U.el('td', {
+            class: (headers[i] && headers[i].align === 'end' ? 'ta-end tnum' : '') + (cell && cell.strong ? ' strong' : ''),
+            colspan: cell && cell.colspan ? cell.colspan : null,
+            text: cell && cell.text !== undefined ? cell.text : String(cell === null || cell === undefined ? '' : cell)
+          });
+        }));
+      })) : null
+    ]);
+  }
+
+  const P = {
+    amountWords: amountWords,
+
+    /* سند تسليم مواد لنقلة واحدة */
+    ticket(l) {
+      const c = EX.store.customer(l.customerId);
+      const trk = EX.store.truck(l.truckId);
+      const v = EX.calc.vat(l.total);
+      const unit = EX.views.unitLabel(l.unit);
+
+      const foot = [[{ text: t('total'), colspan: 3 }, U.money(l.total)]];
+      if (v.vat) {
+        foot.length = 0;
+        foot.push([{ text: t('doc_subtotal'), colspan: 3 }, U.money(v.base)]);
+        foot.push([{ text: t('doc_vat') + ' ' + U.pct(v.rate, 0), colspan: 3 }, U.money(v.vat)]);
+        foot.push([{ text: t('doc_grand'), colspan: 3, strong: true }, { text: U.money(v.total), strong: true }]);
+      }
+
+      render(U.el('div', { class: 'doc' }, [
+        header(t('doc_ticket_title'), 'ن-' + l.no, l.date),
+        U.el('div', { class: 'doc-party' }, [
+          kv(t('customer'), c ? c.name : '—'),
+          kv(t('phone'), c && c.phone ? U.iso(c.phone) : '—'),
+          kv(t('site'), l.site || '—'),
+          kv(t('truck'), trk ? U.iso(trk.plate) : '—'),
+          kv(t('driver'), trk && trk.driver ? trk.driver : '—'),
+          kv(t('payment_type'), t(l.payment === 'cash' ? 'pay_cash' : 'pay_credit'))
+        ]),
+        docTable([
+          { label: t('material') }, { label: t('qty'), align: 'end' },
+          { label: t('unit_price'), align: 'end' }, { label: t('total'), align: 'end' }
+        ], [[
+          EX.store.materialName(l.materialId),
+          U.qty(l.qty, unit),
+          U.money(l.price),
+          U.money(U.num(l.qty) * U.num(l.price))
+        ]].concat(U.num(l.discount) ? [[t('discount'), '', '', '-' + U.money(l.discount, { bare: true })]] : []), foot),
+        U.el('div', { class: 'doc-words', text: t('doc_amount_words') + ': ' + amountWords(v.total) }),
+        l.notes ? U.el('div', { class: 'doc-notes', text: t('notes') + ': ' + l.notes }) : null,
+        signatures(),
+        U.el('div', { class: 'doc-foot', text: t('doc_thanks') })
+      ]));
+    },
+
+    /* سند قبض */
+    receipt(p) {
+      const c = EX.store.customer(p.customerId);
+      const bal = EX.calc.customerBalance(p.customerId);
+      render(U.el('div', { class: 'doc' }, [
+        header(t('doc_receipt_title'), 'ق-' + String(p.id).slice(-5).toUpperCase(), p.date),
+        U.el('div', { class: 'doc-party' }, [
+          kv(t('doc_received_from'), c ? c.name : '—'),
+          kv(t('phone'), c && c.phone ? U.iso(c.phone) : '—'),
+          kv(t('method'), t('m_' + p.method)),
+          kv(t('ref'), p.ref ? U.iso(p.ref) : '—')
+        ]),
+        U.el('div', { class: 'doc-amount' }, [
+          U.el('span', { class: 'k', text: t('amount') }),
+          U.el('span', { class: 'big tnum', text: U.money(p.amount) })
+        ]),
+        U.el('div', { class: 'doc-words', text: amountWords(p.amount) }),
+        U.el('div', { class: 'doc-party' }, [kv(t('balance') + ' بعد الدفعة', U.money(bal))]),
+        p.notes ? U.el('div', { class: 'doc-notes', text: t('notes') + ': ' + p.notes }) : null,
+        signatures(),
+        U.el('div', { class: 'doc-foot', text: t('doc_thanks') })
+      ]));
+    },
+
+    /* كشف حساب عميل */
+    statement(c, st, range) {
+      const rows = st.rows.map(function (r) {
+        return [U.fmtDate(r.date), r.ref || '—', r.desc,
+          r.debit ? U.money(r.debit, { bare: true }) : '—',
+          r.credit ? U.money(r.credit, { bare: true }) : '—',
+          U.money(r.balance, { bare: true })];
+      });
+      render(U.el('div', { class: 'doc' }, [
+        header(t('doc_statement_title'), null, U.today()),
+        U.el('div', { class: 'doc-party' }, [
+          kv(t('customer'), c.name),
+          kv(t('phone'), c.phone ? U.iso(c.phone) : '—'),
+          kv(t('area'), c.area || '—'),
+          kv(t('period'), (range && range.from ? U.fmtDate(range.from) : '—') + ' → ' + U.fmtDate((range && range.to) || U.today()))
+        ]),
+        docTable([
+          { label: t('date') }, { label: t('ref') }, { label: t('notes') },
+          { label: t('debit'), align: 'end' }, { label: t('credit_col'), align: 'end' }, { label: t('running'), align: 'end' }
+        ], [[U.fmtDate((range && range.from) || ''), '—', t('doc_prev_balance'), '—', '—', U.money(st.opening, { bare: true })]].concat(rows), [
+          [{ text: t('doc_closing'), colspan: 3, strong: true },
+            { text: U.money(U.sum(st.rows, function (r) { return r.debit; }), { bare: true }) },
+            { text: U.money(U.sum(st.rows, function (r) { return r.credit; }), { bare: true }) },
+            { text: U.money(st.closing, { bare: true }), strong: true }]
+        ]),
+        U.el('div', { class: 'doc-words', text: t('doc_grand') + ': ' + amountWords(st.closing) }),
+        signatures(),
+        U.el('div', { class: 'doc-foot', text: t('doc_thanks') })
+      ]));
+    },
+
+    /* تقرير الفترة */
+    report(from, to) {
+      const s = EX.calc.summary(from, to);
+      const byMat = EX.calc.breakdown(s.loads, 'materialId');
+      const byCust = EX.calc.breakdown(s.loads, 'customerId').slice(0, 15);
+      const exps = EX.calc.expenseBreakdown(s.expenses);
+      const aging = EX.calc.aging();
+
+      render(U.el('div', { class: 'doc' }, [
+        header(t('reports_title'), null, U.today()),
+        U.el('div', { class: 'doc-party' }, [
+          kv(t('period'), U.fmtDate(from) + ' → ' + U.fmtDate(to)),
+          kv(t('loads_count'), U.iso(String(s.trips))),
+          kv(t('qty'), EX.calc.qtyLabel(s.qty))
+        ]),
+        U.el('div', { class: 'doc-sub', text: t('summary') }),
+        docTable([{ label: t('summary') }, { label: t('amount'), align: 'end' }], [
+          [t('gross_revenue'), U.money(s.revenue, { bare: true })],
+          [t('pay_cash'), U.money(s.cashLoads, { bare: true })],
+          [t('pay_credit'), U.money(s.creditLoads, { bare: true })],
+          [t('payments_title'), U.money(s.paymentsTotal, { bare: true })],
+          [t('collected'), U.money(s.collected, { bare: true })],
+          [t('total_expenses'), U.money(s.expensesTotal, { bare: true })],
+          [t('avg_load'), U.money(s.avgLoad, { bare: true })],
+          [t('avg_price_ton'), U.money(s.avgPricePerTon, { bare: true })]
+        ], [[{ text: t('net_profit'), strong: true }, { text: U.money(s.net, { bare: true }), strong: true }]]),
+
+        U.el('div', { class: 'doc-sub', text: t('by_material') }),
+        docTable([
+          { label: t('material') }, { label: t('loads_count'), align: 'end' },
+          { label: t('sold_qty'), align: 'end' }, { label: t('revenue'), align: 'end' }, { label: t('share'), align: 'end' }
+        ], byMat.map(function (r) {
+          return [r.label, String(r.trips), EX.calc.qtyLabel(r.qty), U.money(r.revenue, { bare: true }), U.pct(r.share)];
+        })),
+
+        U.el('div', { class: 'doc-sub', text: t('by_customer') }),
+        docTable([
+          { label: t('customer') }, { label: t('loads_count'), align: 'end' },
+          { label: t('revenue'), align: 'end' }, { label: t('balance'), align: 'end' }
+        ], byCust.map(function (r) {
+          return [r.label, String(r.trips), U.money(r.revenue, { bare: true }), U.money(EX.calc.customerBalance(r.key), { bare: true })];
+        })),
+
+        U.el('div', { class: 'doc-sub', text: t('expenses_breakdown') }),
+        docTable([{ label: t('category') }, { label: t('amount'), align: 'end' }, { label: t('share'), align: 'end' }],
+          exps.map(function (r) { return [r.label, U.money(r.amount, { bare: true }), U.pct(r.share)]; })),
+
+        U.el('div', { class: 'doc-sub', text: t('aging') }),
+        docTable([
+          { label: t('aging_0'), align: 'end' }, { label: t('aging_31'), align: 'end' },
+          { label: t('aging_61'), align: 'end' }, { label: t('aging_90'), align: 'end' }, { label: t('total'), align: 'end' }
+        ], [[
+          U.money(aging.buckets.b0, { bare: true }), U.money(aging.buckets.b31, { bare: true }),
+          U.money(aging.buckets.b61, { bare: true }), U.money(aging.buckets.b90, { bare: true }),
+          U.money(aging.buckets.total, { bare: true })
+        ]]),
+        U.el('div', { class: 'doc-foot', text: t('app_name') + ' — ' + U.fmtDate(U.today()) })
+      ]));
+    }
+  };
+
+  EX.print = P;
+})(window);
+
+</script>
+  <!-- الواجهة -->
+  <script>
+/* ===== assets/js/ui.js ===== */
+/* كسارة اكسبريس — الهيكل العام وعناصر الواجهة المشتركة */
+(function (root) {
+  'use strict';
+  const EX = (root.EX = root.EX || {});
+  const U = EX.util;
+  const t = function (k, p) { return EX.t(k, p); };
+
+  const ROUTES = [
+    { id: 'dashboard', key: 'nav_dashboard', icon: '◎', primary: true },
+    { id: 'loads', key: 'nav_loads', icon: '▤', primary: true },
+    { id: 'customers', key: 'nav_customers', icon: '◍', primary: true },
+    { id: 'reports', key: 'nav_reports', icon: '◫', primary: true },
+    { id: 'payments', key: 'nav_payments', icon: '◉' },
+    { id: 'expenses', key: 'nav_expenses', icon: '◆' },
+    { id: 'materials', key: 'nav_materials', icon: '▰' },
+    { id: 'trucks', key: 'nav_trucks', icon: '▭' },
+    { id: 'settings', key: 'nav_settings', icon: '⚙', primary: true }
+  ];
+
+  const UI = {
+    route: 'dashboard',
+    ctx: {},   // حالة الشاشة الحالية (فلاتر، عميل مفتوح…)
+
+    /* ---------- إشعارات ---------- */
+    toast(msg, kind) {
+      let host = U.$('.toasts');
+      if (!host) {
+        host = U.el('div', { class: 'toasts' });
+        document.body.appendChild(host);
+      }
+      const el = U.el('div', { class: 'toast ' + (kind || ''), text: msg });
+      host.appendChild(el);
+      setTimeout(function () {
+        el.style.opacity = '0';
+        setTimeout(function () { el.remove(); }, 250);
+      }, 2600);
+    },
+
+    /* ---------- نافذة ---------- */
+    modal(opts) {
+      const backdrop = U.el('div', { class: 'modal-backdrop' });
+      const box = U.el('div', { class: 'modal' + (opts.wide ? ' wide' : '') });
+      box.appendChild(U.el('div', { class: 'modal-head' }, [
+        U.el('div', { class: 'card-title', text: opts.title || '' }),
+        U.el('div', { class: 'spacer' }),
+        U.el('button', { class: 'icon-btn', text: '✕', onclick: close, 'aria-label': t('close') })
+      ]));
+      const body = U.el('div', { class: 'modal-body' });
+      if (typeof opts.body === 'string') body.innerHTML = opts.body;
+      else if (opts.body) body.appendChild(opts.body);
+      box.appendChild(body);
+
+      if (opts.actions !== false) {
+        const actions = U.el('div', { class: 'modal-actions' });
+        if (opts.extra) actions.appendChild(opts.extra);
+        actions.appendChild(U.el('div', { class: 'spacer' }));
+        actions.appendChild(U.el('button', { class: 'btn ghost', text: opts.cancelText || t('cancel'), onclick: close }));
+        if (opts.onConfirm) {
+          actions.appendChild(U.el('button', {
+            class: 'btn primary' + (opts.danger ? ' danger' : ''),
+            text: opts.confirmText || t('save'),
+            onclick: function () { if (opts.onConfirm(body) !== false) close(); }
+          }));
+        }
+        box.appendChild(actions);
+      }
+      backdrop.appendChild(box);
+      backdrop.addEventListener('click', function (e) { if (e.target === backdrop) close(); });
+      document.body.appendChild(backdrop);
+      const first = body.querySelector('input,select,textarea');
+      if (first) setTimeout(function () { first.focus(); }, 40);
+      function close() { backdrop.remove(); if (opts.onClose) opts.onClose(); }
+      return { close: close, body: body };
+    },
+
+    confirm(message, onYes, opts) {
+      opts = opts || {};
+      UI.modal({
+        title: opts.title || t('confirm'),
+        body: U.el('div', { class: 'small', text: message }),
+        confirmText: opts.confirmText || t('confirm'),
+        danger: opts.danger !== false,
+        onConfirm: function () { onYes(); }
+      });
+    },
+
+    /* ---------- نماذج ----------
+       fields: [{name,label,type,value,options,required,step,min,hint,span,placeholder,onInput}]
+       تعيد get() القيم، و errors() التحقق من الحقول المطلوبة. */
+    form(fields, opts) {
+      opts = opts || {};
+      const grid = U.el('div', { class: 'form-grid' + (opts.cols ? ' cols-' + opts.cols : '') });
+      const inputs = {};
+      fields.forEach(function (f) {
+        if (!f) return;
+        const id = 'f_' + f.name + '_' + Math.random().toString(36).slice(2, 6);
+        const wrap = U.el('label', { class: 'field' + (f.span ? ' span-' + f.span : ''), for: id });
+        if (f.type !== 'checkbox') {
+          wrap.appendChild(U.el('span', { class: 'field-label' }, [
+            U.el('span', { text: f.label }),
+            f.required ? U.el('b', { class: 'req', text: '*' }) : null
+          ]));
+        }
+        let input;
+        if (f.type === 'select') {
+          input = U.el('select', { id: id });
+          (f.options || []).forEach(function (o) {
+            input.appendChild(U.el('option', { value: o.value, text: o.label, selected: String(o.value) === String(f.value) ? 'selected' : null }));
+          });
+          input.value = f.value === undefined || f.value === null ? '' : String(f.value);
+        } else if (f.type === 'textarea') {
+          input = U.el('textarea', { id: id, rows: f.rows || 2, placeholder: f.placeholder || '' });
+          input.value = f.value === undefined || f.value === null ? '' : String(f.value);
+        } else if (f.type === 'checkbox') {
+          input = U.el('input', { id: id, type: 'checkbox' });
+          input.checked = !!f.value;
+          wrap.classList.add('check');
+          wrap.appendChild(input);
+          wrap.appendChild(U.el('span', { class: 'field-label inline', text: f.label }));
+        } else {
+          input = U.el('input', {
+            id: id,
+            type: f.type || 'text',
+            placeholder: f.placeholder || '',
+            step: f.step || (f.type === 'number' ? 'any' : null),
+            min: f.min === undefined ? null : f.min,
+            inputmode: f.type === 'number' ? 'decimal' : null
+          });
+          input.value = f.value === undefined || f.value === null ? '' : String(f.value);
+        }
+        if (f.onInput) input.addEventListener(f.type === 'select' || f.type === 'checkbox' ? 'change' : 'input', function () { f.onInput(input, inputs); });
+        if (f.type !== 'checkbox') wrap.appendChild(input);
+        if (f.hint) wrap.appendChild(U.el('span', { class: 'field-hint', text: f.hint }));
+        inputs[f.name] = { input: input, spec: f, wrap: wrap };
+        grid.appendChild(wrap);
+      });
+
+      const api = {
+        node: grid,
+        inputs: inputs,
+        get() {
+          const out = {};
+          Object.keys(inputs).forEach(function (k) {
+            const it = inputs[k];
+            if (it.spec.type === 'checkbox') out[k] = it.input.checked;
+            else if (it.spec.type === 'number') out[k] = it.input.value === '' ? '' : U.num(it.input.value);
+            else out[k] = it.input.value.trim ? it.input.value.trim() : it.input.value;
+          });
+          return out;
+        },
+        set(name, value) {
+          const it = inputs[name];
+          if (!it) return;
+          if (it.spec.type === 'checkbox') it.input.checked = !!value;
+          else it.input.value = value === undefined || value === null ? '' : String(value);
+        },
+        valid() {
+          let ok = true;
+          Object.keys(inputs).forEach(function (k) {
+            const it = inputs[k];
+            if (!it.spec.required) return;
+            const v = it.spec.type === 'checkbox' ? it.input.checked : String(it.input.value).trim();
+            const bad = it.spec.type === 'number' ? (v === '' || !isFinite(Number(v))) : !v;
+            it.wrap.classList.toggle('invalid', bad);
+            if (bad) ok = false;
+          });
+          if (!ok) UI.toast(t('required'), 'bad');
+          return ok;
+        }
+      };
+      return api;
+    },
+
+    /* ---------- بطاقات ---------- */
+    card(title, content, opts) {
+      opts = opts || {};
+      const head = title || opts.actions
+        ? U.el('div', { class: 'card-head' }, [
+          U.el('div', {}, [
+            U.el('div', { class: 'card-title', text: title || '' }),
+            opts.subtitle ? U.el('div', { class: 'card-sub', text: opts.subtitle }) : null
+          ]),
+          U.el('div', { class: 'spacer' }),
+          opts.actions || null
+        ])
+        : null;
+      return U.el('div', { class: 'card' + (opts.class ? ' ' + opts.class : '') }, [
+        head,
+        content
+      ]);
+    },
+
+    kpi(label, value, opts) {
+      opts = opts || {};
+      return U.el('div', { class: 'kpi' + (opts.class ? ' ' + opts.class : '') }, [
+        U.el('div', { class: 'kpi-label', text: label }),
+        U.el('div', { class: 'kpi-value tnum ' + (opts.tone || ''), text: value }),
+        opts.sub ? U.el('div', { class: 'kpi-sub', text: opts.sub }) : null
+      ]);
+    },
+
+    /* ---------- جداول ----------
+       cols: [{key,label,cell(row),align,width,tnum,hideSm}] */
+    table(cols, rows, opts) {
+      opts = opts || {};
+      if (!rows.length) {
+        return U.el('div', { class: 'empty' }, [
+          U.el('div', { class: 'empty-title', text: opts.emptyTitle || t('no_data') }),
+          U.el('div', { class: 'empty-hint', text: opts.emptyHint || t('empty_hint') })
+        ]);
+      }
+      const thead = U.el('thead', {}, U.el('tr', {}, cols.map(function (c) {
+        return U.el('th', {
+          class: (c.align === 'end' ? 'ta-end' : c.align === 'center' ? 'ta-center' : '') + (c.hideSm ? ' hide-sm' : ''),
+          style: c.width ? { width: c.width } : null,
+          text: c.label
+        });
+      })));
+      const tbody = U.el('tbody', {}, rows.map(function (r, i) {
+        const tr = U.el('tr', opts.onRowClick ? { class: 'clickable', onclick: function () { opts.onRowClick(r); } } : {});
+        cols.forEach(function (c) {
+          const v = c.cell ? c.cell(r, i) : r[c.key];
+          const td = U.el('td', {
+            class: (c.align === 'end' ? 'ta-end' : c.align === 'center' ? 'ta-center' : '') +
+              (c.tnum ? ' tnum' : '') + (c.hideSm ? ' hide-sm' : ''),
+            'data-label': c.label
+          });
+          if (v === null || v === undefined) td.textContent = '—';
+          else if (typeof v === 'object' && v.nodeType) td.appendChild(v);
+          else td.textContent = String(v);
+          tr.appendChild(td);
+        });
+        return tr;
+      }));
+      const foot = opts.footer
+        ? U.el('tfoot', {}, U.el('tr', {}, opts.footer.map(function (f) {
+          return U.el('td', { class: (f.align === 'end' ? 'ta-end' : '') + (f.tnum ? ' tnum' : ''), text: f.text || '' });
+        })))
+        : null;
+      return U.el('div', { class: 'table-wrap' }, U.el('table', { class: 'table' }, [thead, tbody, foot]));
+    },
+
+    badge(text, kind) { return U.el('span', { class: 'badge ' + (kind || ''), text: text }); },
+
+    rowActions(items) {
+      return U.el('div', { class: 'row-actions' }, items.map(function (it) {
+        return U.el('button', {
+          class: 'mini-btn' + (it.danger ? ' danger' : ''),
+          text: it.label,
+          title: it.title || it.label,
+          onclick: function (e) { e.stopPropagation(); it.onClick(); }
+        });
+      }));
+    },
+
+    /* شريط فلترة قياسي: بحث + مدى تاريخ + قوائم */
+    filterBar(spec, onChange) {
+      const bar = U.el('div', { class: 'filter-bar' });
+      (spec || []).forEach(function (f) {
+        if (f.type === 'search') {
+          const input = U.el('input', {
+            type: 'search', placeholder: t('search'), value: f.value || '',
+            oninput: U.debounce(function (e) { onChange(f.name, e.target.value); }, 250)
+          });
+          bar.appendChild(U.el('div', { class: 'filter-field grow' }, input));
+        } else if (f.type === 'date') {
+          bar.appendChild(U.el('div', { class: 'filter-field' }, [
+            U.el('span', { class: 'filter-label', text: f.label }),
+            U.el('input', {
+              type: 'date', value: f.value || '',
+              onchange: function (e) { onChange(f.name, e.target.value); }
+            })
+          ]));
+        } else if (f.type === 'select') {
+          const sel = U.el('select', { onchange: function (e) { onChange(f.name, e.target.value); } });
+          (f.options || []).forEach(function (o) {
+            sel.appendChild(U.el('option', { value: o.value, text: o.label, selected: String(o.value) === String(f.value || '') ? 'selected' : null }));
+          });
+          sel.value = f.value || '';
+          bar.appendChild(U.el('div', { class: 'filter-field' }, [
+            f.label ? U.el('span', { class: 'filter-label', text: f.label }) : null, sel
+          ]));
+        } else if (f.type === 'button') {
+          bar.appendChild(U.el('button', { class: 'btn ghost sm', text: f.label, onclick: f.onClick }));
+        }
+      });
+      return bar;
+    },
+
+    /* عند تعذّر التنزيل: نعرض النص لينسخه المستخدم */
+    exportFallback(filename, text) {
+      const area = U.el('textarea', { rows: '10', readonly: 'readonly' });
+      area.value = text;
+      UI.modal({
+        title: filename,
+        actions: false,
+        body: U.el('div', {}, [
+          U.el('div', { class: 'notice warn', text: t('export_copy_hint') }),
+          area,
+          U.el('button', {
+            class: 'btn primary', style: { marginTop: '10px' }, text: t('copy'),
+            onclick: function () {
+              area.select();
+              const done = function () { UI.toast(t('copied'), 'good'); };
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(done, function () {
+                  try { document.execCommand('copy'); done(); } catch (e) { /* يبقى النص محددًا */ }
+                });
+              } else {
+                try { document.execCommand('copy'); done(); } catch (e) { /* يبقى النص محددًا */ }
+              }
+            }
+          })
+        ])
+      });
+    },
+
+    saveFile(filename, text, mime) {
+      // داخل إطار محمي (معاينة أو استضافة مدمجة) لا يبدأ التنزيل ولا يُطلق خطأ،
+      // فنعرض النص للنسخ مباشرة بدل نقرة لا تفعل شيئًا
+      let framed = false;
+      try { framed = root.self !== root.top; } catch (e) { framed = true; }
+      if (framed || !U.download(filename, text, mime)) UI.exportFallback(filename, text);
+      else UI.toast(filename, 'good');
+    },
+
+    /* ---------- الهيكل ---------- */
+    renderShell() {
+      const app = U.$('#app');
+      U.clear(app);
+
+      const company = EX.store.settings().company;
+      const title = EX.i18n.lang === 'en' ? (company.nameEn || company.name) : company.name;
+
+      const bar = U.el('div', { class: 'appbar' }, U.el('div', { class: 'wrap appbar-in' }, [
+        U.el('div', { class: 'brand' }, [
+          U.el('div', { class: 'logo', text: '⛰' }),
+          U.el('div', {}, [
+            U.el('div', { class: 'brand-name', text: title || t('app_name') }),
+            U.el('div', { class: 'brand-sub', text: t('app_tagline') })
+          ])
+        ]),
+        U.el('div', { class: 'spacer' }),
+        U.el('button', { class: 'btn primary sm', text: '+ ' + t('new_load'), onclick: function () { EX.views.loadForm(); } }),
+        U.el('button', {
+          class: 'icon-btn', text: EX.i18n.lang === 'ar' ? 'EN' : 'ع', title: t('language'),
+          onclick: function () { EX.app.toggleLang(); }
+        }),
+        U.el('button', {
+          class: 'icon-btn', text: EX.store.settings().theme === 'dark' ? '☀' : '☾', title: t('theme'),
+          onclick: function () { EX.app.toggleTheme(); }
+        })
+      ]));
+
+      const tabs = U.el('div', { class: 'tabs' }, U.el('div', { class: 'wrap tabs-in' }, ROUTES.map(function (r) {
+        return U.el('button', {
+          class: 'tab' + (UI.route === r.id ? ' active' : ''),
+          onclick: function () { UI.go(r.id); }
+        }, [U.el('i', { text: r.icon }), U.el('span', { text: t(r.key) })]);
+      })));
+
+      const main = U.el('main', { class: 'wrap view', id: 'view' });
+
+      const nav = U.el('nav', { class: 'bottom-nav' }, ROUTES.filter(function (r) { return r.primary; }).map(function (r) {
+        return U.el('button', {
+          class: 'nav-btn' + (UI.route === r.id ? ' active' : ''),
+          onclick: function () { UI.go(r.id); }
+        }, [U.el('i', { text: r.icon }), U.el('span', { text: t(r.key) })]);
+      }));
+
+      app.appendChild(bar);
+      app.appendChild(tabs);
+      app.appendChild(main);
+      app.appendChild(nav);
+      UI.renderView();
+    },
+
+    renderView() {
+      const host = U.$('#view');
+      if (!host) return;
+      U.clear(host);
+      const fn = EX.views[UI.route] || EX.views.dashboard;
+      try {
+        fn(host);
+      } catch (e) {
+        console.error(e);
+        host.appendChild(U.el('div', { class: 'notice bad', text: 'خطأ في العرض: ' + e.message }));
+      }
+      const active = U.$('.tabs-in .tab.active');
+      if (active && active.scrollIntoView) active.scrollIntoView({ block: 'nearest', inline: 'center' });
+    },
+
+    go(route, ctx) {
+      UI.route = route;
+      UI.ctx = ctx || {};
+      if (location.hash !== '#' + route) {
+        try { history.replaceState(null, '', '#' + route); } catch (e) { location.hash = route; }
+      }
+      UI.renderShell();
+      root.scrollTo({ top: 0, behavior: 'auto' });
+    },
+
+    refresh() { UI.renderView(); },
+    ROUTES: ROUTES
+  };
+
+  EX.ui = UI;
+})(window);
+
+</script>
+  <script>
+/* ===== assets/js/views1.js ===== */
+/* كسارة اكسبريس — لوحة اليوم وسجل النقلات */
+(function (root) {
+  'use strict';
+  const EX = (root.EX = root.EX || {});
+  const U = EX.util;
+  const t = function (k, p) { return EX.t(k, p); };
+  const V = (EX.views = EX.views || {});
+
+  function unitLabel(u) { return t('unit_' + (u === 'm3' ? 'm3' : u === 'load' ? 'load' : 'ton')); }
+  V.unitLabel = unitLabel;
+
+  function needSetup() {
+    const s = EX.store.s;
+    if (s.customers.length) return null;
+    return U.el('div', { class: 'notice' }, [
+      U.el('b', { text: 'ابدأ هنا: ' }),
+      U.el('span', { text: 'أضف أول عميل من شاشة «العملاء»، أو حمّل بيانات تجريبية من «الإعدادات» لتجربة التطبيق بسرعة.' })
+    ]);
+  }
+
+  /* ======================= لوحة اليوم ======================= */
+  V.dashboard = function (host) {
+    const today = U.today();
+    const mStart = U.startOfMonth(today);
+    const day = EX.calc.summary(today, today);
+    const month = EX.calc.summary(mStart, today);
+    const receivables = EX.calc.totalReceivables();
+
+    const setup = needSetup();
+    if (setup) host.appendChild(setup);
+
+    host.appendChild(U.el('div', { class: 'kpi-grid' }, [
+      EX.ui.kpi(t('kpi_loads_today'), U.iso(String(day.trips)), { sub: EX.calc.qtyLabel(day.qty) }),
+      EX.ui.kpi(t('kpi_revenue_today'), U.money(day.revenue), { tone: day.revenue > 0 ? 'pos' : '' }),
+      EX.ui.kpi(t('kpi_cash_today'), U.money(day.collected), { sub: t('pay_cash') + ' + ' + t('payments_title') }),
+      EX.ui.kpi(t('kpi_receivables'), U.money(receivables), { tone: receivables > 0 ? 'warn' : '', sub: t('aging') })
+    ]));
+
+    host.appendChild(U.el('div', { class: 'kpi-grid' }, [
+      EX.ui.kpi(t('kpi_month_revenue'), U.money(month.revenue), { sub: U.monthLabel(U.monthKey(today), EX.i18n.lang) }),
+      EX.ui.kpi(t('kpi_month_expenses'), U.money(month.expensesTotal)),
+      EX.ui.kpi(t('kpi_month_profit'), U.money(month.net), { tone: U.sign(month.net) }),
+      EX.ui.kpi(t('margin'), U.pct(month.margin), { tone: U.sign(month.margin), sub: t('loads_count') + ': ' + U.iso(String(month.trips)) })
+    ]));
+
+    /* إجراءات سريعة */
+    host.appendChild(EX.ui.card(t('quick_actions'), U.el('div', { class: 'btn-row' }, [
+      U.el('button', { class: 'btn primary', text: '+ ' + t('new_load'), onclick: function () { V.loadForm(); } }),
+      U.el('button', { class: 'btn', text: t('new_payment'), onclick: function () { V.paymentForm(); } }),
+      U.el('button', { class: 'btn', text: t('new_expense'), onclick: function () { V.expenseForm(); } }),
+      U.el('button', { class: 'btn ghost', text: t('add_customer'), onclick: function () { V.customerForm(); } })
+    ])));
+
+    /* الحركة اليومية */
+    const series = EX.calc.dailySeries(30);
+    const chartHost = U.el('div', { class: 'chart' });
+    host.appendChild(EX.ui.card(t('revenue_30'), U.el('div', {}, [
+      chartHost,
+      EX.charts.legend([{ label: t('revenue') }, { label: t('total_expenses') }])
+    ])));
+    EX.charts.line(chartHost, series.map(function (d) {
+      return { label: U.iso(d.date.slice(5)), value: d.revenue, value2: d.expense };
+    }), { second: true, height: 190 });
+
+    /* توزيع الكميات على المواد + أعلى العملاء */
+    const grid = U.el('div', { class: 'grid-2' });
+    const matHost = U.el('div', { class: 'chart' });
+    const custHost = U.el('div', { class: 'chart' });
+    grid.appendChild(EX.ui.card(t('mix_month'), matHost));
+    grid.appendChild(EX.ui.card(t('top_customers'), custHost));
+    host.appendChild(grid);
+
+    const byMat = EX.calc.breakdown(month.loads, 'materialId').slice(0, 7);
+    EX.charts.hbars(matHost, byMat.map(function (r) {
+      return { label: r.label, value: r.revenue, text: U.money(r.revenue, { bare: true, decimals: 0 }) };
+    }), { colors: true });
+
+    const byCust = EX.calc.breakdown(month.loads, 'customerId').slice(0, 7);
+    EX.charts.hbars(custHost, byCust.map(function (r) {
+      return { label: r.label, value: r.revenue, text: U.money(r.revenue, { bare: true, decimals: 0 }) };
+    }), { colors: true });
+
+    /* نقلات اليوم */
+    const todayLoads = U.sortBy(day.loads, function (l) { return l.createdAt || 0; }, true);
+    host.appendChild(EX.ui.card(t('today_loads'), V.loadsTable(todayLoads, { compact: true }), {
+      subtitle: EX.calc.qtyLabel(day.qty) + ' · ' + U.money(day.revenue),
+      actions: U.el('button', { class: 'btn ghost sm', text: t('nav_loads'), onclick: function () { EX.ui.go('loads'); } })
+    }));
+
+    /* أعلى المديونيات */
+    const debtors = U.sortBy(EX.store.s.customers.map(function (c) {
+      return { c: c, bal: EX.calc.customerBalance(c.id) };
+    }).filter(function (r) { return r.bal > 0.0005; }), function (r) { return r.bal; }, true).slice(0, 8);
+    if (debtors.length) {
+      host.appendChild(EX.ui.card(t('top_debtors'), EX.ui.table([
+        { label: t('customer'), cell: function (r) { return r.c.name; } },
+        { label: t('area'), cell: function (r) { return r.c.area || '—'; }, hideSm: true },
+        { label: t('balance'), align: 'end', tnum: true, cell: function (r) { return U.money(r.bal); } }
+      ], debtors, {
+        onRowClick: function (r) { EX.ui.go('customers', { customerId: r.c.id }); }
+      })));
+    }
+  };
+
+  /* ======================= جدول النقلات ======================= */
+  V.loadsTable = function (loads, opts) {
+    opts = opts || {};
+    const cols = [
+      { label: t('load_no'), width: '74px', tnum: true, cell: function (l) { return U.iso('#' + l.no); } },
+      { label: t('date'), width: '104px', tnum: true, hideSm: opts.compact, cell: function (l) { return U.fmtDate(l.date); } },
+      { label: t('customer'), cell: function (l) { return EX.store.customerName(l.customerId); } },
+      { label: t('material'), cell: function (l) { return EX.store.materialName(l.materialId); } },
+      { label: t('qty'), align: 'end', tnum: true, cell: function (l) { return U.qty(l.qty, unitLabel(l.unit)); } },
+      { label: t('unit_price'), align: 'end', tnum: true, hideSm: true, cell: function (l) { return U.money(l.price); } },
+      { label: t('total'), align: 'end', tnum: true, cell: function (l) { return U.money(l.total); } },
+      {
+        label: t('payment_type'), align: 'center', cell: function (l) {
+          return EX.ui.badge(t(l.payment === 'cash' ? 'pay_cash' : 'pay_credit'), l.payment === 'cash' ? 'good' : 'warn');
+        }
+      },
+      { label: t('truck'), hideSm: true, cell: function (l) { return EX.store.truckLabel(l.truckId); } },
+      {
+        label: t('actions'), align: 'end', cell: function (l) {
+          return EX.ui.rowActions([
+            { label: t('ticket'), onClick: function () { EX.print.ticket(l); } },
+            { label: t('edit'), onClick: function () { V.loadForm(l); } },
+            {
+              label: t('delete'), danger: true, onClick: function () {
+                EX.ui.confirm(t('delete_confirm'), function () {
+                  EX.store.removeLoad(l.id);
+                  EX.ui.toast(t('deleted'));
+                  EX.ui.refresh();
+                });
+              }
+            }
+          ]);
+        }
+      }
+    ].filter(function (c) { return !(opts.compact && c.label === t('truck')); });
+
+    /* يُبنى التذييل من قائمة الأعمدة نفسها حتى يبقى كل مجموع تحت عموده */
+    const totals = {};
+    totals[t('load_no')] = t('total') + ' · ' + loads.length;
+    totals[t('qty')] = EX.calc.qtyLabel(EX.calc.qtySummary(loads));
+    totals[t('total')] = U.money(U.sum(loads, function (l) { return l.total; }));
+    const footer = loads.length ? cols.map(function (c) {
+      return { text: totals[c.label] || '', align: c.align, tnum: !!totals[c.label] && c.label !== t('load_no') };
+    }) : null;
+
+    return EX.ui.table(cols, loads, {
+      footer: footer,
+      emptyTitle: t('no_data'),
+      emptyHint: opts.compact ? 'لا توجد نقلات مسجلة لهذا اليوم.' : t('empty_hint')
+    });
+  };
+
+  /* ======================= شاشة النقلات ======================= */
+  V.loads = function (host) {
+    const f = EX.ui.ctx.loadFilter = EX.ui.ctx.loadFilter || {
+      from: U.addDays(U.today(), -30), to: U.today(), q: '', customerId: '', materialId: '', payment: ''
+    };
+    const onChange = function (name, value) {
+      f[name] = value;
+      EX.ui.refresh();
+    };
+
+    host.appendChild(EX.ui.filterBar([
+      { type: 'search', name: 'q', value: f.q },
+      { type: 'date', name: 'from', label: t('from'), value: f.from },
+      { type: 'date', name: 'to', label: t('to'), value: f.to },
+      {
+        type: 'select', name: 'customerId', value: f.customerId,
+        options: [{ value: '', label: t('customer') + ': ' + t('all') }].concat(
+          U.sortBy(EX.store.s.customers, function (c) { return c.name; }).map(function (c) {
+            return { value: c.id, label: c.name };
+          }))
+      },
+      {
+        type: 'select', name: 'materialId', value: f.materialId,
+        options: [{ value: '', label: t('material') + ': ' + t('all') }].concat(
+          EX.store.s.materials.map(function (m) { return { value: m.id, label: EX.store.materialName(m.id) }; }))
+      },
+      {
+        type: 'select', name: 'payment', value: f.payment,
+        options: [
+          { value: '', label: t('payment_type') + ': ' + t('all') },
+          { value: 'cash', label: t('pay_cash') },
+          { value: 'credit', label: t('pay_credit') }
+        ]
+      },
+      { type: 'button', label: t('last_30'), onClick: function () { f.from = U.addDays(U.today(), -30); f.to = U.today(); EX.ui.refresh(); } },
+      { type: 'button', label: t('this_month'), onClick: function () { f.from = U.startOfMonth(U.today()); f.to = U.today(); EX.ui.refresh(); } }
+    ], onChange));
+
+    const loads = U.sortBy(EX.calc.loads(f), function (l) { return l.date + '_' + String(l.no).padStart(6, '0'); }, true);
+    const sum = EX.calc.summary(f.from, f.to);
+    const filteredRevenue = U.sum(loads, function (l) { return l.total; });
+
+    host.appendChild(U.el('div', { class: 'kpi-grid' }, [
+      EX.ui.kpi(t('loads_count'), U.iso(String(loads.length))),
+      EX.ui.kpi(t('qty'), EX.calc.qtyLabel(EX.calc.qtySummary(loads))),
+      EX.ui.kpi(t('gross_revenue'), U.money(filteredRevenue)),
+      EX.ui.kpi(t('avg_load'), U.money(loads.length ? filteredRevenue / loads.length : 0))
+    ]));
+
+    host.appendChild(EX.ui.card(t('loads_title'), V.loadsTable(loads), {
+      subtitle: U.fmtDate(f.from) + ' → ' + U.fmtDate(f.to),
+      actions: U.el('div', { class: 'btn-row' }, [
+        U.el('button', { class: 'btn ghost sm', text: t('export_csv'), onclick: function () { V.exportLoads(loads); } }),
+        U.el('button', { class: 'btn primary sm', text: '+ ' + t('add_load'), onclick: function () { V.loadForm(); } })
+      ])
+    }));
+    void sum;
+  };
+
+  V.exportLoads = function (loads) {
+    const rows = [[t('load_no'), t('date'), t('customer'), t('material'), t('qty'), t('unit'),
+      t('unit_price'), t('discount'), t('total'), t('payment_type'), t('truck'), t('driver'), t('site'), t('notes')]];
+    loads.forEach(function (l) {
+      const trk = EX.store.truck(l.truckId);
+      rows.push([l.no, l.date, EX.store.customerName(l.customerId), EX.store.materialName(l.materialId),
+        l.qty, unitLabel(l.unit), l.price, l.discount || 0, l.total,
+        t(l.payment === 'cash' ? 'pay_cash' : 'pay_credit'),
+        trk ? trk.plate : '', trk ? trk.driver || '' : '', l.site || '', l.notes || '']);
+    });
+    EX.ui.saveFile('loads_' + U.today() + '.csv', U.csv(rows), 'text/csv');
+  };
+
+  /* ======================= نموذج النقلة ======================= */
+  V.loadForm = function (existing) {
+    const st = EX.store.s;
+    if (!st.customers.length) {
+      EX.ui.toast('أضف عميلًا أولًا', 'bad');
+      return V.customerForm();
+    }
+    const l = existing || {};
+    const mats = st.materials.filter(function (m) { return m.active !== false || m.id === l.materialId; });
+    const defMat = l.materialId || (mats[0] && mats[0].id) || '';
+    const defCust = l.customerId || st.customers[0].id;
+
+    const totalLine = U.el('div', { class: 'total-line' });
+    const recalc = function () {
+      const v = form.get();
+      const total = EX.calc.loadTotal({ qty: v.qty, price: v.price, discount: v.discount });
+      U.clear(totalLine).appendChild(U.el('div', {}, [
+        U.el('span', { class: 'muted small', text: t('total') + ': ' }),
+        U.el('b', { class: 'tnum big', text: U.money(total) })
+      ]));
+    };
+    const syncPrice = function () {
+      const v = form.get();
+      const m = EX.store.material(v.materialId);
+      form.set('price', EX.store.priceFor(v.customerId, v.materialId));
+      if (m) {
+        form.set('unit', m.unit);
+        if (m.unit === 'load' && (!v.qty || U.num(v.qty) === 0)) form.set('qty', 1);
+      }
+      recalc();
+    };
+
+    const form = EX.ui.form([
+      { name: 'date', label: t('date'), type: 'date', value: l.date || U.today(), required: true },
+      {
+        name: 'customerId', label: t('customer'), type: 'select', required: true, value: defCust,
+        options: U.sortBy(st.customers, function (c) { return c.name; }).map(function (c) {
+          return { value: c.id, label: c.name + (c.area ? ' — ' + c.area : '') };
+        }),
+        onInput: syncPrice
+      },
+      {
+        name: 'materialId', label: t('material'), type: 'select', required: true, value: defMat,
+        options: mats.map(function (m) { return { value: m.id, label: EX.store.materialName(m.id) }; }),
+        onInput: syncPrice
+      },
+      {
+        name: 'qty', label: t('qty'), type: 'number', required: true, step: '0.01', min: 0,
+        value: l.qty === undefined ? '' : l.qty, onInput: recalc
+      },
+      {
+        name: 'unit', label: t('unit'), type: 'select',
+        value: l.unit || (EX.store.material(defMat) || {}).unit || 'ton',
+        options: ['ton', 'load', 'm3'].map(function (u) { return { value: u, label: unitLabel(u) }; })
+      },
+      {
+        name: 'price', label: t('unit_price') + ' (ر.ع)', type: 'number', required: true, step: '0.001', min: 0,
+        value: l.price === undefined ? EX.store.priceFor(defCust, defMat) : l.price, onInput: recalc
+      },
+      {
+        name: 'discount', label: t('discount') + ' (ر.ع)', type: 'number', step: '0.001', min: 0,
+        value: l.discount || '', onInput: recalc
+      },
+      {
+        name: 'payment', label: t('payment_type'), type: 'select',
+        value: l.payment || ((EX.store.customer(defCust) || {}).type === 'cash' ? 'cash' : 'credit'),
+        options: [{ value: 'cash', label: t('pay_cash') }, { value: 'credit', label: t('pay_credit') }]
+      },
+      {
+        name: 'truckId', label: t('truck'), type: 'select', value: l.truckId || '',
+        options: [{ value: '', label: '—' }].concat(st.trucks.map(function (tr) {
+          return { value: tr.id, label: tr.plate + (tr.driver ? ' · ' + tr.driver : '') };
+        }))
+      },
+      { name: 'site', label: t('site'), type: 'text', value: l.site || '', placeholder: t('optional') },
+      { name: 'notes', label: t('notes'), type: 'textarea', value: l.notes || '', span: 2 }
+    ]);
+
+    const body = U.el('div', {}, [form.node, totalLine]);
+    recalc();
+
+    EX.ui.modal({
+      title: existing ? t('edit_load') + ' #' + existing.no : t('add_load'),
+      body: body,
+      wide: true,
+      confirmText: t('save'),
+      extra: existing ? U.el('button', {
+        class: 'btn ghost sm', text: t('ticket'),
+        onclick: function () { EX.print.ticket(existing); }
+      }) : null,
+      onConfirm: function () {
+        if (!form.valid()) return false;
+        const v = form.get();
+        v.qty = U.num(v.qty);
+        v.price = U.num(v.price);
+        v.discount = U.num(v.discount);
+        if (v.qty <= 0) { EX.ui.toast(t('qty') + ' > 0', 'bad'); return false; }
+        if (existing) EX.store.updateLoad(existing.id, v);
+        else EX.store.addLoad(v);
+        EX.ui.toast(t('saved'), 'good');
+        EX.ui.refresh();
+      }
+    });
+  };
+})(window);
+
+</script>
+  <script>
+/* ===== assets/js/views2.js ===== */
+/* كسارة اكسبريس — العملاء والذمم والمدفوعات والمواد والشاحنات والمصروفات */
+(function (root) {
+  'use strict';
+  const EX = (root.EX = root.EX || {});
+  const U = EX.util;
+  const t = function (k, p) { return EX.t(k, p); };
+  const V = EX.views;
+
+  /* ======================= العملاء ======================= */
+  V.customers = function (host) {
+    if (EX.ui.ctx.customerId && EX.store.customer(EX.ui.ctx.customerId)) {
+      return V.customerDetail(host, EX.store.customer(EX.ui.ctx.customerId));
+    }
+    const f = EX.ui.ctx.custFilter = EX.ui.ctx.custFilter || { q: '', only: '' };
+
+    host.appendChild(EX.ui.filterBar([
+      { type: 'search', name: 'q', value: f.q },
+      {
+        type: 'select', name: 'only', value: f.only,
+        options: [
+          { value: '', label: t('all') },
+          { value: 'debt', label: t('balance') + ' > 0' },
+          { value: 'credit', label: t('pay_credit') },
+          { value: 'cash', label: t('pay_cash') }
+        ]
+      },
+      { type: 'button', label: '+ ' + t('add_customer'), onClick: function () { V.customerForm(); } }
+    ], function (name, value) { f[name] = value; EX.ui.refresh(); }));
+
+    const aging = EX.calc.aging();
+    host.appendChild(U.el('div', { class: 'kpi-grid' }, [
+      EX.ui.kpi(t('aging_0'), U.money(aging.buckets.b0)),
+      EX.ui.kpi(t('aging_31'), U.money(aging.buckets.b31), { tone: aging.buckets.b31 > 0 ? 'warn' : '' }),
+      EX.ui.kpi(t('aging_61'), U.money(aging.buckets.b61), { tone: aging.buckets.b61 > 0 ? 'warn' : '' }),
+      EX.ui.kpi(t('aging_90'), U.money(aging.buckets.b90), { tone: aging.buckets.b90 > 0 ? 'neg' : '' })
+    ]));
+
+    const rows = EX.store.s.customers.map(function (c) {
+      const loads = EX.store.s.loads.filter(function (l) { return l.customerId === c.id; });
+      const last = loads.length ? U.sortBy(loads, function (l) { return l.date; }, true)[0].date : '';
+      return {
+        c: c,
+        balance: EX.calc.customerBalance(c.id),
+        trips: loads.length,
+        revenue: U.sum(loads, function (l) { return l.total; }),
+        last: last,
+        ageRow: aging.perCustomer[c.id] || null
+      };
+    }).filter(function (r) {
+      if (f.q && !U.match([r.c.name, r.c.phone, r.c.area, r.c.notes].join(' '), f.q)) return false;
+      if (f.only === 'debt' && r.balance <= 0.0005) return false;
+      if (f.only === 'credit' && r.c.type !== 'credit') return false;
+      if (f.only === 'cash' && r.c.type !== 'cash') return false;
+      return true;
+    });
+
+    const sorted = U.sortBy(rows, function (r) { return r.balance; }, true);
+
+    host.appendChild(EX.ui.card(t('customers_title'), EX.ui.table([
+      { label: t('name'), cell: function (r) { return r.c.name; } },
+      { label: t('phone'), tnum: true, hideSm: true, cell: function (r) { return r.c.phone ? U.iso(r.c.phone) : '—'; } },
+      { label: t('area'), hideSm: true, cell: function (r) { return r.c.area || '—'; } },
+      {
+        label: t('customer_type'), align: 'center', cell: function (r) {
+          return EX.ui.badge(t(r.c.type === 'cash' ? 'pay_cash' : 'pay_credit'), r.c.type === 'cash' ? 'good' : '');
+        }
+      },
+      { label: t('loads_count'), align: 'end', tnum: true, hideSm: true, cell: function (r) { return U.iso(String(r.trips)); } },
+      { label: t('revenue'), align: 'end', tnum: true, hideSm: true, cell: function (r) { return U.money(r.revenue); } },
+      { label: t('last_load'), tnum: true, hideSm: true, cell: function (r) { return r.last ? U.fmtDate(r.last) : '—'; } },
+      {
+        label: t('balance'), align: 'end', tnum: true, cell: function (r) {
+          return U.el('b', { class: r.balance > 0.0005 ? 'warn' : 'muted', text: U.money(r.balance) });
+        }
+      },
+      {
+        label: t('actions'), align: 'end', cell: function (r) {
+          return EX.ui.rowActions([
+            { label: t('statement'), onClick: function () { EX.ui.go('customers', { customerId: r.c.id }); } },
+            { label: t('new_payment'), onClick: function () { V.paymentForm({ customerId: r.c.id }); } },
+            { label: t('edit'), onClick: function () { V.customerForm(r.c); } }
+          ]);
+        }
+      }
+    ], sorted, {
+      onRowClick: function (r) { EX.ui.go('customers', { customerId: r.c.id }); },
+      footer: sorted.length ? [
+        { text: t('total') + ' · ' + sorted.length }, { text: '' }, { text: '' }, { text: '' }, { text: '' }, { text: '' }, { text: '' },
+        { text: U.money(U.sum(sorted, function (r) { return Math.max(0, r.balance); })), align: 'end', tnum: true },
+        { text: '' }
+      ] : null
+    }), {
+      actions: U.el('button', { class: 'btn primary sm', text: '+ ' + t('add_customer'), onclick: function () { V.customerForm(); } })
+    }));
+  };
+
+  /* ---------- كشف حساب عميل ---------- */
+  V.customerDetail = function (host, c) {
+    const f = EX.ui.ctx.stFilter = EX.ui.ctx.stFilter || { from: '', to: U.today() };
+    host.appendChild(U.el('div', { class: 'back-row' }, [
+      U.el('button', { class: 'btn ghost sm', text: '← ' + t('nav_customers'), onclick: function () { EX.ui.go('customers'); } }),
+      U.el('div', { class: 'spacer' }),
+      U.el('button', { class: 'btn ghost sm', text: t('edit'), onclick: function () { V.customerForm(c); } }),
+      U.el('button', { class: 'btn sm', text: t('new_payment'), onclick: function () { V.paymentForm({ customerId: c.id }); } }),
+      U.el('button', { class: 'btn primary sm', text: '+ ' + t('add_load'), onclick: function () { V.loadForm({ customerId: c.id }); } })
+    ]));
+
+    const st = EX.calc.statement(c.id, f.from, f.to);
+    const loads = EX.store.s.loads.filter(function (l) { return l.customerId === c.id; });
+    const age = EX.calc.aging().perCustomer[c.id];
+
+    host.appendChild(EX.ui.card(c.name, U.el('div', { class: 'meta-grid' }, [
+      U.el('div', {}, [U.el('span', { class: 'muted small', text: t('phone') }), U.el('div', { class: 'tnum', text: c.phone ? U.iso(c.phone) : '—' })]),
+      U.el('div', {}, [U.el('span', { class: 'muted small', text: t('area') }), U.el('div', { text: c.area || '—' })]),
+      U.el('div', {}, [U.el('span', { class: 'muted small', text: t('customer_type') }), U.el('div', { text: t(c.type === 'cash' ? 'pay_cash' : 'pay_credit') })]),
+      U.el('div', {}, [U.el('span', { class: 'muted small', text: t('loads_count') }), U.el('div', { class: 'tnum', text: U.iso(String(loads.length)) })]),
+      U.el('div', {}, [U.el('span', { class: 'muted small', text: t('revenue') }), U.el('div', { class: 'tnum', text: U.money(U.sum(loads, function (l) { return l.total; })) })]),
+      U.el('div', {}, [U.el('span', { class: 'muted small', text: t('balance') }), U.el('div', { class: 'tnum big ' + (st.closing > 0.0005 ? 'warn' : ''), text: U.money(st.closing) })])
+    ]), { subtitle: c.notes || '' }));
+
+    if (age) {
+      host.appendChild(EX.ui.card(t('aging'), U.el('div', { class: 'kpi-grid tight' }, [
+        EX.ui.kpi(t('aging_0'), U.money(age.b0)),
+        EX.ui.kpi(t('aging_31'), U.money(age.b31)),
+        EX.ui.kpi(t('aging_61'), U.money(age.b61)),
+        EX.ui.kpi(t('aging_90'), U.money(age.b90), { tone: age.b90 > 0 ? 'neg' : '' })
+      ])));
+    }
+
+    host.appendChild(EX.ui.filterBar([
+      { type: 'date', name: 'from', label: t('from'), value: f.from },
+      { type: 'date', name: 'to', label: t('to'), value: f.to },
+      { type: 'button', label: t('all'), onClick: function () { f.from = ''; f.to = U.today(); EX.ui.refresh(); } }
+    ], function (name, value) { f[name] = value; EX.ui.refresh(); }));
+
+    const rows = st.rows.slice().reverse();
+    host.appendChild(EX.ui.card(t('statement'), EX.ui.table([
+      { label: t('date'), tnum: true, width: '104px', cell: function (r) { return U.fmtDate(r.date); } },
+      { label: t('ref'), cell: function (r) { return r.ref ? U.iso(r.ref) : '—'; } },
+      { label: t('notes'), cell: function (r) { return r.desc; } },
+      { label: t('debit'), align: 'end', tnum: true, cell: function (r) { return r.debit ? U.money(r.debit) : '—'; } },
+      { label: t('credit_col'), align: 'end', tnum: true, cell: function (r) { return r.credit ? U.money(r.credit) : '—'; } },
+      { label: t('running'), align: 'end', tnum: true, cell: function (r) { return U.money(r.balance); } }
+    ], rows, {
+      footer: [
+        { text: t('doc_prev_balance') + ': ' + U.money(st.opening) }, { text: '' }, { text: '' },
+        { text: U.money(U.sum(rows, function (r) { return r.debit; })), align: 'end', tnum: true },
+        { text: U.money(U.sum(rows, function (r) { return r.credit; })), align: 'end', tnum: true },
+        { text: U.money(st.closing), align: 'end', tnum: true }
+      ]
+    }), {
+      actions: U.el('div', { class: 'btn-row' }, [
+        U.el('button', { class: 'btn ghost sm', text: t('export_csv'), onclick: function () {
+          const out = [[t('date'), t('ref'), t('notes'), t('debit'), t('credit_col'), t('running')]];
+          st.rows.forEach(function (r) { out.push([r.date, r.ref, r.desc, r.debit, r.credit, r.balance]); });
+          EX.ui.saveFile('statement_' + c.name + '.csv', U.csv(out), 'text/csv');
+        } }),
+        U.el('button', { class: 'btn sm', text: t('print'), onclick: function () { EX.print.statement(c, st, f); } })
+      ])
+    }));
+  };
+
+  V.customerForm = function (existing) {
+    const c = existing || {};
+    const mats = EX.store.s.materials;
+    const priceFields = mats.map(function (m) {
+      return {
+        name: 'p_' + m.id, label: EX.store.materialName(m.id) + ' (' + V.unitLabel(m.unit) + ')',
+        type: 'number', step: '0.001', min: 0,
+        placeholder: String(m.price),
+        value: c.priceOverrides && c.priceOverrides[m.id] !== undefined ? c.priceOverrides[m.id] : ''
+      };
+    });
+
+    const main = EX.ui.form([
+      { name: 'name', label: t('name'), type: 'text', value: c.name || '', required: true, span: 2 },
+      { name: 'phone', label: t('phone'), type: 'tel', value: c.phone || '' },
+      { name: 'area', label: t('area'), type: 'text', value: c.area || '' },
+      {
+        name: 'type', label: t('customer_type'), type: 'select', value: c.type || 'credit',
+        options: [{ value: 'credit', label: t('pay_credit') }, { value: 'cash', label: t('pay_cash') }]
+      },
+      { name: 'openingBalance', label: t('opening_balance') + ' (ر.ع)', type: 'number', step: '0.001', value: c.openingBalance || '' },
+      { name: 'notes', label: t('notes'), type: 'textarea', value: c.notes || '', span: 2 }
+    ]);
+    const prices = EX.ui.form(priceFields, { cols: 3 });
+
+    const body = U.el('div', {}, [
+      main.node,
+      U.el('div', { class: 'sub-head' }, [
+        U.el('b', { text: t('special_prices') }),
+        U.el('span', { class: 'muted small', text: ' — ' + t('special_prices_hint') })
+      ]),
+      prices.node
+    ]);
+
+    EX.ui.modal({
+      title: existing ? t('edit_customer') : t('add_customer'),
+      wide: true,
+      body: body,
+      extra: existing ? U.el('button', {
+        class: 'btn ghost sm danger', text: t('delete'),
+        onclick: function () {
+          EX.ui.confirm(t('delete_confirm'), function () {
+            EX.store.remove('customers', existing.id);
+            EX.ui.toast(t('deleted'));
+            EX.ui.go('customers');
+            U.$$('.modal-backdrop').forEach(function (n) { n.remove(); });
+          });
+        }
+      }) : null,
+      onConfirm: function () {
+        if (!main.valid()) return false;
+        const v = main.get();
+        const pv = prices.get();
+        const overrides = {};
+        mats.forEach(function (m) {
+          const val = pv['p_' + m.id];
+          if (val !== '' && val !== null && val !== undefined && isFinite(Number(val))) overrides[m.id] = U.num(val);
+        });
+        EX.store.upsert('customers', {
+          id: existing ? existing.id : undefined,
+          name: v.name, phone: v.phone, area: v.area, type: v.type,
+          openingBalance: U.num(v.openingBalance), notes: v.notes,
+          priceOverrides: overrides, active: true
+        }, 'cus');
+        EX.ui.toast(t('saved'), 'good');
+        EX.ui.refresh();
+      }
+    });
+  };
+
+  /* ======================= المدفوعات ======================= */
+  V.payments = function (host) {
+    const f = EX.ui.ctx.payFilter = EX.ui.ctx.payFilter || {
+      from: U.addDays(U.today(), -60), to: U.today(), q: '', customerId: ''
+    };
+    host.appendChild(EX.ui.filterBar([
+      { type: 'search', name: 'q', value: f.q },
+      { type: 'date', name: 'from', label: t('from'), value: f.from },
+      { type: 'date', name: 'to', label: t('to'), value: f.to },
+      {
+        type: 'select', name: 'customerId', value: f.customerId,
+        options: [{ value: '', label: t('customer') + ': ' + t('all') }].concat(
+          U.sortBy(EX.store.s.customers, function (c) { return c.name; }).map(function (c) {
+            return { value: c.id, label: c.name };
+          }))
+      },
+      { type: 'button', label: '+ ' + t('add_payment'), onClick: function () { V.paymentForm(); } }
+    ], function (name, value) { f[name] = value; EX.ui.refresh(); }));
+
+    const pays = U.sortBy(EX.calc.payments(f), function (p) { return p.date; }, true);
+    const total = U.sum(pays, function (p) { return p.amount; });
+
+    host.appendChild(U.el('div', { class: 'kpi-grid' }, [
+      EX.ui.kpi(t('collected'), U.money(total), { tone: 'pos' }),
+      EX.ui.kpi(t('rows'), U.iso(String(pays.length))),
+      EX.ui.kpi(t('kpi_receivables'), U.money(EX.calc.totalReceivables()), { tone: 'warn' })
+    ]));
+
+    host.appendChild(EX.ui.card(t('payments_title'), EX.ui.table([
+      { label: t('date'), tnum: true, width: '104px', cell: function (p) { return U.fmtDate(p.date); } },
+      { label: t('customer'), cell: function (p) { return EX.store.customerName(p.customerId); } },
+      { label: t('amount'), align: 'end', tnum: true, cell: function (p) { return U.money(p.amount); } },
+      { label: t('method'), align: 'center', cell: function (p) { return EX.ui.badge(t('m_' + p.method)); } },
+      { label: t('ref'), hideSm: true, cell: function (p) { return p.ref ? U.iso(p.ref) : '—'; } },
+      { label: t('notes'), hideSm: true, cell: function (p) { return p.notes || '—'; } },
+      {
+        label: t('actions'), align: 'end', cell: function (p) {
+          return EX.ui.rowActions([
+            { label: t('receipt'), onClick: function () { EX.print.receipt(p); } },
+            { label: t('edit'), onClick: function () { V.paymentForm(p); } },
+            {
+              label: t('delete'), danger: true, onClick: function () {
+                EX.ui.confirm(t('delete_confirm'), function () {
+                  EX.store.remove('payments', p.id);
+                  EX.ui.toast(t('deleted'));
+                  EX.ui.refresh();
+                });
+              }
+            }
+          ]);
+        }
+      }
+    ], pays, {
+      footer: pays.length ? [
+        { text: t('total') }, { text: '' },
+        { text: U.money(total), align: 'end', tnum: true },
+        { text: '' }, { text: '' }, { text: '' }, { text: '' }
+      ] : null
+    }), {
+      actions: U.el('button', { class: 'btn primary sm', text: '+ ' + t('add_payment'), onclick: function () { V.paymentForm(); } })
+    }));
+  };
+
+  V.paymentForm = function (existing) {
+    if (!EX.store.s.customers.length) { EX.ui.toast('أضف عميلًا أولًا', 'bad'); return V.customerForm(); }
+    const p = existing || {};
+    const balLine = U.el('div', { class: 'total-line' });
+    const showBal = function () {
+      const v = form.get();
+      const bal = EX.calc.customerBalance(v.customerId);
+      U.clear(balLine).appendChild(U.el('div', {}, [
+        U.el('span', { class: 'muted small', text: t('balance') + ': ' }),
+        U.el('b', { class: 'tnum big ' + (bal > 0.0005 ? 'warn' : ''), text: U.money(bal) })
+      ]));
+    };
+    const form = EX.ui.form([
+      { name: 'date', label: t('date'), type: 'date', value: p.date || U.today(), required: true },
+      {
+        name: 'customerId', label: t('customer'), type: 'select', required: true,
+        value: p.customerId || (EX.ui.ctx.payCust || EX.store.s.customers[0].id),
+        options: U.sortBy(EX.store.s.customers, function (c) { return c.name; }).map(function (c) {
+          return { value: c.id, label: c.name + ' — ' + U.money(EX.calc.customerBalance(c.id)) };
+        }),
+        onInput: showBal
+      },
+      { name: 'amount', label: t('amount') + ' (ر.ع)', type: 'number', required: true, step: '0.001', min: 0, value: p.amount === undefined ? '' : p.amount },
+      {
+        name: 'method', label: t('method'), type: 'select', value: p.method || 'cash',
+        options: [{ value: 'cash', label: t('m_cash') }, { value: 'bank', label: t('m_bank') }, { value: 'cheque', label: t('m_cheque') }]
+      },
+      { name: 'ref', label: t('ref'), type: 'text', value: p.ref || '', placeholder: t('optional') },
+      { name: 'notes', label: t('notes'), type: 'textarea', value: p.notes || '', span: 2 }
+    ]);
+    if (existing && existing.customerId) form.set('customerId', existing.customerId);
+    showBal();
+
+    EX.ui.modal({
+      title: existing ? t('edit') + ' — ' + t('receipt') : t('add_payment'),
+      wide: true,
+      body: U.el('div', {}, [form.node, balLine]),
+      onConfirm: function () {
+        if (!form.valid()) return false;
+        const v = form.get();
+        v.amount = U.num(v.amount);
+        if (v.amount <= 0) { EX.ui.toast(t('amount') + ' > 0', 'bad'); return false; }
+        EX.store.upsert('payments', Object.assign({ id: existing ? existing.id : undefined }, v), 'pay');
+        EX.ui.toast(t('saved'), 'good');
+        EX.ui.refresh();
+      }
+    });
+  };
+
+  /* ======================= المواد ======================= */
+  V.materials = function (host) {
+    const mStart = U.startOfMonth(U.today());
+    const loads = EX.calc.loads({ from: mStart, to: U.today() });
+    const byMat = U.groupBy(loads, function (l) { return l.materialId; });
+
+    host.appendChild(EX.ui.card(t('materials_title'), EX.ui.table([
+      { label: t('material'), cell: function (m) { return EX.store.materialName(m.id); } },
+      { label: t('unit'), align: 'center', cell: function (m) { return V.unitLabel(m.unit); } },
+      { label: t('default_price'), align: 'end', tnum: true, cell: function (m) { return U.money(m.price); } },
+      {
+        label: t('sold_qty') + ' — ' + t('this_month'), align: 'end', tnum: true, cell: function (m) {
+          const g = byMat[m.id] || [];
+          return U.qty(U.sum(g, function (l) { return l.qty; }), V.unitLabel(m.unit));
+        }
+      },
+      {
+        label: t('revenue') + ' — ' + t('this_month'), align: 'end', tnum: true, cell: function (m) {
+          return U.money(U.sum(byMat[m.id] || [], function (l) { return l.total; }));
+        }
+      },
+      {
+        label: t('active'), align: 'center', cell: function (m) {
+          return EX.ui.badge(t(m.active === false ? 'inactive' : 'active'), m.active === false ? '' : 'good');
+        }
+      },
+      {
+        label: t('actions'), align: 'end', cell: function (m) {
+          return EX.ui.rowActions([
+            { label: t('edit'), onClick: function () { V.materialForm(m); } },
+            {
+              label: m.active === false ? t('active') : t('inactive'), onClick: function () {
+                EX.store.upsert('materials', { id: m.id, active: m.active === false });
+                EX.ui.refresh();
+              }
+            }
+          ]);
+        }
+      }
+    ], EX.store.s.materials, {}), {
+      subtitle: 'السعر الافتراضي يُستخدم تلقائيًا في النقلة الجديدة، ويمكن تجاوزه بسعر خاص لكل عميل.',
+      actions: U.el('button', { class: 'btn primary sm', text: '+ ' + t('add_material'), onclick: function () { V.materialForm(); } })
+    }));
+  };
+
+  V.materialForm = function (existing) {
+    const m = existing || {};
+    const form = EX.ui.form([
+      { name: 'name', label: t('name') + ' (ع)', type: 'text', value: m.name || '', required: true },
+      { name: 'nameEn', label: t('name') + ' (EN)', type: 'text', value: m.nameEn || '' },
+      {
+        name: 'unit', label: t('unit'), type: 'select', value: m.unit || 'ton',
+        options: ['ton', 'load', 'm3'].map(function (u) { return { value: u, label: V.unitLabel(u) }; })
+      },
+      { name: 'price', label: t('default_price') + ' (ر.ع)', type: 'number', step: '0.001', min: 0, required: true, value: m.price === undefined ? '' : m.price }
+    ]);
+    EX.ui.modal({
+      title: existing ? t('edit') : t('add_material'),
+      body: form.node,
+      extra: existing ? U.el('button', {
+        class: 'btn ghost sm danger', text: t('delete'),
+        onclick: function () {
+          const used = EX.store.s.loads.some(function (l) { return l.materialId === existing.id; });
+          if (used) return EX.ui.toast('المادة مستخدمة في نقلات — أوقفها بدل حذفها', 'bad');
+          EX.ui.confirm(t('delete_confirm'), function () {
+            EX.store.remove('materials', existing.id);
+            EX.ui.toast(t('deleted'));
+            EX.ui.refresh();
+            U.$$('.modal-backdrop').forEach(function (n) { n.remove(); });
+          });
+        }
+      }) : null,
+      onConfirm: function () {
+        if (!form.valid()) return false;
+        const v = form.get();
+        EX.store.upsert('materials', {
+          id: existing ? existing.id : undefined,
+          name: v.name, nameEn: v.nameEn, unit: v.unit, price: U.num(v.price),
+          active: existing ? existing.active !== false : true
+        }, 'mat');
+        EX.ui.toast(t('saved'), 'good');
+        EX.ui.refresh();
+      }
+    });
+  };
+
+  /* ======================= الشاحنات ======================= */
+  V.trucks = function (host) {
+    const f = EX.ui.ctx.trkFilter = EX.ui.ctx.trkFilter || { from: U.startOfMonth(U.today()), to: U.today() };
+    host.appendChild(EX.ui.filterBar([
+      { type: 'date', name: 'from', label: t('from'), value: f.from },
+      { type: 'date', name: 'to', label: t('to'), value: f.to },
+      { type: 'button', label: '+ ' + t('add_truck'), onClick: function () { V.truckForm(); } }
+    ], function (name, value) { f[name] = value; EX.ui.refresh(); }));
+
+    const loads = EX.calc.loads({ from: f.from, to: f.to });
+    const byTruck = U.groupBy(loads, function (l) { return l.truckId || ''; });
+    const exps = EX.calc.expenses({ from: f.from, to: f.to });
+
+    host.appendChild(EX.ui.card(t('trucks_title'), EX.ui.table([
+      { label: t('plate'), tnum: true, cell: function (tr) { return U.iso(tr.plate); } },
+      { label: t('driver'), cell: function (tr) { return tr.driver || '—'; } },
+      { label: t('phone'), tnum: true, hideSm: true, cell: function (tr) { return tr.phone ? U.iso(tr.phone) : '—'; } },
+      { label: t('capacity'), align: 'end', tnum: true, hideSm: true, cell: function (tr) { return tr.capacity ? U.qty(tr.capacity) : '—'; } },
+      { label: t('trips'), align: 'end', tnum: true, cell: function (tr) { return U.iso(String((byTruck[tr.id] || []).length)); } },
+      {
+        label: t('hauled'), align: 'end', tnum: true, cell: function (tr) {
+          return EX.calc.qtyLabel(EX.calc.qtySummary(byTruck[tr.id] || []));
+        }
+      },
+      {
+        label: t('revenue'), align: 'end', tnum: true, cell: function (tr) {
+          return U.money(U.sum(byTruck[tr.id] || [], function (l) { return l.total; }));
+        }
+      },
+      {
+        label: t('total_expenses'), align: 'end', tnum: true, hideSm: true, cell: function (tr) {
+          return U.money(U.sum(exps.filter(function (e) { return e.truckId === tr.id; }), function (e) { return e.amount; }));
+        }
+      },
+      {
+        label: t('actions'), align: 'end', cell: function (tr) {
+          return EX.ui.rowActions([{ label: t('edit'), onClick: function () { V.truckForm(tr); } }]);
+        }
+      }
+    ], EX.store.s.trucks, {}), {
+      subtitle: U.fmtDate(f.from) + ' → ' + U.fmtDate(f.to),
+      actions: U.el('button', { class: 'btn primary sm', text: '+ ' + t('add_truck'), onclick: function () { V.truckForm(); } })
+    }));
+
+    const unassigned = (byTruck[''] || []).length;
+    if (unassigned) {
+      host.appendChild(U.el('div', { class: 'notice warn', text: 'عدد ' + unassigned + ' نقلة غير مربوطة بشاحنة في هذه الفترة.' }));
+    }
+  };
+
+  V.truckForm = function (existing) {
+    const tr = existing || {};
+    const form = EX.ui.form([
+      { name: 'plate', label: t('plate'), type: 'text', value: tr.plate || '', required: true },
+      { name: 'driver', label: t('driver'), type: 'text', value: tr.driver || '' },
+      { name: 'phone', label: t('phone'), type: 'tel', value: tr.phone || '' },
+      { name: 'capacity', label: t('capacity'), type: 'number', step: '0.5', min: 0, value: tr.capacity || '' },
+      { name: 'notes', label: t('notes'), type: 'textarea', value: tr.notes || '', span: 2 }
+    ]);
+    EX.ui.modal({
+      title: existing ? t('edit') : t('add_truck'),
+      body: form.node,
+      extra: existing ? U.el('button', {
+        class: 'btn ghost sm danger', text: t('delete'),
+        onclick: function () {
+          const used = EX.store.s.loads.some(function (l) { return l.truckId === existing.id; });
+          if (used) return EX.ui.toast('الشاحنة مستخدمة في نقلات مسجلة', 'bad');
+          EX.ui.confirm(t('delete_confirm'), function () {
+            EX.store.remove('trucks', existing.id);
+            EX.ui.toast(t('deleted'));
+            EX.ui.refresh();
+            U.$$('.modal-backdrop').forEach(function (n) { n.remove(); });
+          });
+        }
+      }) : null,
+      onConfirm: function () {
+        if (!form.valid()) return false;
+        const v = form.get();
+        EX.store.upsert('trucks', Object.assign({ id: existing ? existing.id : undefined, active: true }, v, { capacity: U.num(v.capacity) }), 'trk');
+        EX.ui.toast(t('saved'), 'good');
+        EX.ui.refresh();
+      }
+    });
+  };
+
+  /* ======================= المصروفات ======================= */
+  V.expenses = function (host) {
+    const f = EX.ui.ctx.expFilter = EX.ui.ctx.expFilter || {
+      from: U.startOfMonth(U.today()), to: U.today(), q: '', category: ''
+    };
+    host.appendChild(EX.ui.filterBar([
+      { type: 'search', name: 'q', value: f.q },
+      { type: 'date', name: 'from', label: t('from'), value: f.from },
+      { type: 'date', name: 'to', label: t('to'), value: f.to },
+      {
+        type: 'select', name: 'category', value: f.category,
+        options: [{ value: '', label: t('category') + ': ' + t('all') }].concat(
+          EX.store.EXPENSE_CATEGORIES.map(function (k) { return { value: k, label: t('cat_' + k) }; }))
+      },
+      { type: 'button', label: '+ ' + t('add_expense'), onClick: function () { V.expenseForm(); } }
+    ], function (name, value) { f[name] = value; EX.ui.refresh(); }));
+
+    const exps = U.sortBy(EX.calc.expenses(f), function (e) { return e.date; }, true);
+    const total = U.sum(exps, function (e) { return e.amount; });
+    const revenue = U.sum(EX.calc.loads({ from: f.from, to: f.to }), function (l) { return l.total; });
+
+    host.appendChild(U.el('div', { class: 'kpi-grid' }, [
+      EX.ui.kpi(t('total_expenses'), U.money(total), { tone: 'neg' }),
+      EX.ui.kpi(t('gross_revenue'), U.money(revenue), { tone: 'pos' }),
+      EX.ui.kpi(t('net_profit'), U.money(revenue - total), { tone: U.sign(revenue - total) }),
+      EX.ui.kpi(t('share'), U.pct(revenue > 0 ? total / revenue * 100 : 0), { sub: t('total_expenses') + ' / ' + t('gross_revenue') })
+    ]));
+
+    const chartHost = U.el('div', { class: 'chart' });
+    const breakdown = EX.calc.expenseBreakdown(exps);
+    host.appendChild(EX.ui.card(t('expenses_breakdown'), U.el('div', { class: 'grid-2-tight' }, [
+      chartHost,
+      EX.ui.table([
+        { label: t('category'), cell: function (r) { return r.label; } },
+        { label: t('amount'), align: 'end', tnum: true, cell: function (r) { return U.money(r.amount); } },
+        { label: t('share'), align: 'end', tnum: true, cell: function (r) { return U.pct(r.share); } }
+      ], breakdown, {})
+    ])));
+    EX.charts.donut(chartHost, breakdown.map(function (r) { return { label: r.label, value: r.amount }; }), { centerLabel: 'ر.ع' });
+
+    host.appendChild(EX.ui.card(t('expenses_title'), EX.ui.table([
+      { label: t('date'), tnum: true, width: '104px', cell: function (e) { return U.fmtDate(e.date); } },
+      { label: t('category'), cell: function (e) { return t('cat_' + (e.category || 'other')); } },
+      { label: t('amount'), align: 'end', tnum: true, cell: function (e) { return U.money(e.amount); } },
+      { label: t('truck'), hideSm: true, cell: function (e) { return e.truckId ? EX.store.truckLabel(e.truckId) : '—'; } },
+      { label: t('notes'), hideSm: true, cell: function (e) { return e.notes || '—'; } },
+      {
+        label: t('actions'), align: 'end', cell: function (e) {
+          return EX.ui.rowActions([
+            { label: t('edit'), onClick: function () { V.expenseForm(e); } },
+            {
+              label: t('delete'), danger: true, onClick: function () {
+                EX.ui.confirm(t('delete_confirm'), function () {
+                  EX.store.remove('expenses', e.id);
+                  EX.ui.toast(t('deleted'));
+                  EX.ui.refresh();
+                });
+              }
+            }
+          ]);
+        }
+      }
+    ], exps, {
+      footer: exps.length ? [
+        { text: t('total') }, { text: '' },
+        { text: U.money(total), align: 'end', tnum: true },
+        { text: '' }, { text: '' }, { text: '' }
+      ] : null
+    }), {
+      actions: U.el('div', { class: 'btn-row' }, [
+        U.el('button', { class: 'btn ghost sm', text: t('export_csv'), onclick: function () {
+          const rows = [[t('date'), t('category'), t('amount'), t('truck'), t('notes')]];
+          exps.forEach(function (e) {
+            rows.push([e.date, t('cat_' + (e.category || 'other')), e.amount, e.truckId ? EX.store.truckLabel(e.truckId) : '', e.notes || '']);
+          });
+          EX.ui.saveFile('expenses_' + U.today() + '.csv', U.csv(rows), 'text/csv');
+        } }),
+        U.el('button', { class: 'btn primary sm', text: '+ ' + t('add_expense'), onclick: function () { V.expenseForm(); } })
+      ])
+    }));
+  };
+
+  V.expenseForm = function (existing) {
+    const e = existing || {};
+    const form = EX.ui.form([
+      { name: 'date', label: t('date'), type: 'date', value: e.date || U.today(), required: true },
+      {
+        name: 'category', label: t('category'), type: 'select', value: e.category || 'diesel',
+        options: EX.store.EXPENSE_CATEGORIES.map(function (k) { return { value: k, label: t('cat_' + k) }; })
+      },
+      { name: 'amount', label: t('amount') + ' (ر.ع)', type: 'number', step: '0.001', min: 0, required: true, value: e.amount === undefined ? '' : e.amount },
+      {
+        name: 'truckId', label: t('truck') + ' (' + t('optional') + ')', type: 'select', value: e.truckId || '',
+        options: [{ value: '', label: '—' }].concat(EX.store.s.trucks.map(function (tr) {
+          return { value: tr.id, label: tr.plate + (tr.driver ? ' · ' + tr.driver : '') };
+        }))
+      },
+      { name: 'notes', label: t('notes'), type: 'textarea', value: e.notes || '', span: 2 }
+    ]);
+    EX.ui.modal({
+      title: existing ? t('edit') : t('add_expense'),
+      body: form.node,
+      onConfirm: function () {
+        if (!form.valid()) return false;
+        const v = form.get();
+        v.amount = U.num(v.amount);
+        if (v.amount <= 0) { EX.ui.toast(t('amount') + ' > 0', 'bad'); return false; }
+        EX.store.upsert('expenses', Object.assign({ id: existing ? existing.id : undefined }, v), 'exp');
+        EX.ui.toast(t('saved'), 'good');
+        EX.ui.refresh();
+      }
+    });
+  };
+})(window);
+
+</script>
+  <script>
+/* ===== assets/js/views3.js ===== */
+/* كسارة اكسبريس — التقارير والإعدادات */
+(function (root) {
+  'use strict';
+  const EX = (root.EX = root.EX || {});
+  const U = EX.util;
+  const t = function (k, p) { return EX.t(k, p); };
+  const V = EX.views;
+
+  /* ======================= التقارير ======================= */
+  V.reports = function (host) {
+    const f = EX.ui.ctx.repFilter = EX.ui.ctx.repFilter || {
+      from: U.startOfMonth(U.today()), to: U.today()
+    };
+    const preset = function (label, from, to) {
+      return { type: 'button', label: label, onClick: function () { f.from = from(); f.to = to(); EX.ui.refresh(); } };
+    };
+
+    host.appendChild(EX.ui.filterBar([
+      { type: 'date', name: 'from', label: t('from'), value: f.from },
+      { type: 'date', name: 'to', label: t('to'), value: f.to },
+      preset(t('today_label'), U.today, U.today),
+      preset(t('this_month'), function () { return U.startOfMonth(U.today()); }, U.today),
+      preset(t('last_30'), function () { return U.addDays(U.today(), -29); }, U.today),
+      {
+        type: 'button', label: 'السنة', onClick: function () {
+          f.from = U.today().slice(0, 4) + '-01-01'; f.to = U.today(); EX.ui.refresh();
+        }
+      },
+      { type: 'button', label: t('print'), onClick: function () { EX.print.report(f.from, f.to); } }
+    ], function (name, value) { f[name] = value; EX.ui.refresh(); }));
+
+    const s = EX.calc.summary(f.from, f.to);
+
+    host.appendChild(U.el('div', { class: 'kpi-grid' }, [
+      EX.ui.kpi(t('gross_revenue'), U.money(s.revenue), { tone: 'pos', sub: U.fmtDate(f.from) + ' → ' + U.fmtDate(f.to) }),
+      EX.ui.kpi(t('total_expenses'), U.money(s.expensesTotal), { tone: 'neg' }),
+      EX.ui.kpi(t('net_profit'), U.money(s.net), { tone: U.sign(s.net) }),
+      EX.ui.kpi(t('margin'), U.pct(s.margin), { tone: U.sign(s.margin) })
+    ]));
+
+    host.appendChild(U.el('div', { class: 'kpi-grid' }, [
+      EX.ui.kpi(t('loads_count'), U.iso(String(s.trips)), { sub: EX.calc.qtyLabel(s.qty) }),
+      EX.ui.kpi(t('avg_load'), U.money(s.avgLoad)),
+      EX.ui.kpi(t('avg_price_ton'), U.money(s.avgPricePerTon)),
+      EX.ui.kpi(t('collected'), U.money(s.collected), { sub: t('pay_cash') + ' ' + U.money(s.cashLoads, { decimals: 0 }) + ' + ' + t('payments_title') + ' ' + U.money(s.paymentsTotal, { decimals: 0 }) })
+    ]));
+
+    /* الحركة اليومية داخل الفترة */
+    const days = Math.min(120, Math.max(1, U.daysBetween(f.from, f.to) + 1));
+    const rev = {}, exp = {};
+    s.loads.forEach(function (l) { rev[l.date] = U.num(rev[l.date]) + U.num(l.total); });
+    s.expenses.forEach(function (e) { exp[e.date] = U.num(exp[e.date]) + U.num(e.amount); });
+    const series = [];
+    for (let i = 0; i < days; i++) {
+      const d = U.addDays(f.from, i);
+      series.push({ label: U.iso(d.slice(5)), value: U.round(rev[d] || 0, 3), value2: U.round(exp[d] || 0, 3) });
+    }
+    const trendHost = U.el('div', { class: 'chart' });
+    host.appendChild(EX.ui.card(t('daily_trend'), U.el('div', {}, [
+      trendHost,
+      EX.charts.legend([{ label: t('revenue') }, { label: t('total_expenses') }])
+    ])));
+    if (days <= 45) EX.charts.bars(trendHost, series, { second: true, height: 200 });
+    else EX.charts.line(trendHost, series, { second: true, height: 200 });
+
+    /* حسب المادة */
+    const byMat = EX.calc.breakdown(s.loads, 'materialId');
+    const matChart = U.el('div', { class: 'chart' });
+    host.appendChild(EX.ui.card(t('by_material'), U.el('div', { class: 'grid-2-tight' }, [
+      matChart,
+      EX.ui.table([
+        { label: t('material'), cell: function (r) { return r.label; } },
+        { label: t('loads_count'), align: 'end', tnum: true, cell: function (r) { return U.iso(String(r.trips)); } },
+        { label: t('sold_qty'), align: 'end', tnum: true, cell: function (r) { return EX.calc.qtyLabel(r.qty); } },
+        { label: t('revenue'), align: 'end', tnum: true, cell: function (r) { return U.money(r.revenue); } },
+        { label: t('share'), align: 'end', tnum: true, cell: function (r) { return U.pct(r.share); } }
+      ], byMat, {
+        footer: byMat.length ? [
+          { text: t('total') }, { text: U.iso(String(s.trips)), align: 'end', tnum: true },
+          { text: EX.calc.qtyLabel(s.qty), align: 'end', tnum: true },
+          { text: U.money(s.revenue), align: 'end', tnum: true }, { text: '' }
+        ] : null
+      })
+    ])));
+    EX.charts.hbars(matChart, byMat.slice(0, 9).map(function (r) {
+      return { label: r.label, value: r.revenue, text: U.money(r.revenue, { bare: true, decimals: 0 }) };
+    }), { colors: true });
+
+    /* حسب العميل */
+    const byCust = EX.calc.breakdown(s.loads, 'customerId');
+    const custChart = U.el('div', { class: 'chart' });
+    host.appendChild(EX.ui.card(t('by_customer'), U.el('div', { class: 'grid-2-tight' }, [
+      custChart,
+      EX.ui.table([
+        { label: t('customer'), cell: function (r) { return r.label; } },
+        { label: t('loads_count'), align: 'end', tnum: true, cell: function (r) { return U.iso(String(r.trips)); } },
+        { label: t('revenue'), align: 'end', tnum: true, cell: function (r) { return U.money(r.revenue); } },
+        { label: t('share'), align: 'end', tnum: true, cell: function (r) { return U.pct(r.share); } },
+        { label: t('balance'), align: 'end', tnum: true, cell: function (r) { return U.money(EX.calc.customerBalance(r.key)); } }
+      ], byCust.slice(0, 20), {
+        onRowClick: function (r) { EX.ui.go('customers', { customerId: r.key }); }
+      })
+    ])));
+    EX.charts.hbars(custChart, byCust.slice(0, 9).map(function (r) {
+      return { label: r.label, value: r.revenue, text: U.money(r.revenue, { bare: true, decimals: 0 }) };
+    }), { colors: true });
+
+    /* حسب الشاحنة */
+    if (EX.store.s.trucks.length) {
+      const byTruck = EX.calc.breakdown(s.loads, 'truckId');
+      host.appendChild(EX.ui.card(t('by_truck'), EX.ui.table([
+        { label: t('truck'), cell: function (r) { return r.label; } },
+        { label: t('trips'), align: 'end', tnum: true, cell: function (r) { return U.iso(String(r.trips)); } },
+        { label: t('hauled'), align: 'end', tnum: true, cell: function (r) { return EX.calc.qtyLabel(r.qty); } },
+        { label: t('revenue'), align: 'end', tnum: true, cell: function (r) { return U.money(r.revenue); } },
+        { label: t('share'), align: 'end', tnum: true, cell: function (r) { return U.pct(r.share); } }
+      ], byTruck, {})));
+    }
+
+    /* المصروفات */
+    const expRows = EX.calc.expenseBreakdown(s.expenses);
+    const expChart = U.el('div', { class: 'chart' });
+    host.appendChild(EX.ui.card(t('expenses_breakdown'), U.el('div', { class: 'grid-2-tight' }, [
+      expChart,
+      EX.ui.table([
+        { label: t('category'), cell: function (r) { return r.label; } },
+        { label: t('rows'), align: 'end', tnum: true, cell: function (r) { return U.iso(String(r.count)); } },
+        { label: t('amount'), align: 'end', tnum: true, cell: function (r) { return U.money(r.amount); } },
+        { label: t('share'), align: 'end', tnum: true, cell: function (r) { return U.pct(r.share); } }
+      ], expRows, {
+        footer: expRows.length ? [
+          { text: t('total') }, { text: '' },
+          { text: U.money(s.expensesTotal), align: 'end', tnum: true }, { text: '' }
+        ] : null
+      })
+    ])));
+    EX.charts.donut(expChart, expRows.map(function (r) { return { label: r.label, value: r.amount }; }), { centerLabel: 'ر.ع' });
+
+    /* الأشهر */
+    const months = EX.calc.monthlySeries(12);
+    const monChart = U.el('div', { class: 'chart' });
+    host.appendChild(EX.ui.card(t('rev_vs_exp') + ' — ' + t('by_month'), U.el('div', {}, [
+      monChart,
+      EX.charts.legend([{ label: t('revenue') }, { label: t('total_expenses') }]),
+      EX.ui.table([
+        { label: t('period'), cell: function (r) { return U.monthLabel(r.month, EX.i18n.lang); } },
+        { label: t('loads_count'), align: 'end', tnum: true, cell: function (r) { return U.iso(String(r.trips)); } },
+        { label: t('unit_ton'), align: 'end', tnum: true, cell: function (r) { return U.qty(r.tons); } },
+        { label: t('revenue'), align: 'end', tnum: true, cell: function (r) { return U.money(r.revenue); } },
+        { label: t('total_expenses'), align: 'end', tnum: true, cell: function (r) { return U.money(r.expense); } },
+        {
+          label: t('net_profit'), align: 'end', tnum: true, cell: function (r) {
+            return U.el('b', { class: U.sign(r.revenue - r.expense), text: U.money(r.revenue - r.expense) });
+          }
+        }
+      ], months.slice().reverse(), {})
+    ])));
+    EX.charts.bars(monChart, months.map(function (m) {
+      return { label: U.iso(m.month.slice(2)), value: m.revenue, value2: m.expense };
+    }), { second: true, height: 200 });
+
+    /* أعمار الذمم */
+    const aging = EX.calc.aging();
+    const ageRows = Object.keys(aging.perCustomer).map(function (id) {
+      return Object.assign({ id: id, name: EX.store.customerName(id) }, aging.perCustomer[id]);
+    });
+    host.appendChild(EX.ui.card(t('aging'), U.el('div', {}, [
+      U.el('div', { class: 'kpi-grid tight' }, [
+        EX.ui.kpi(t('aging_0'), U.money(aging.buckets.b0)),
+        EX.ui.kpi(t('aging_31'), U.money(aging.buckets.b31), { tone: 'warn' }),
+        EX.ui.kpi(t('aging_61'), U.money(aging.buckets.b61), { tone: 'warn' }),
+        EX.ui.kpi(t('aging_90'), U.money(aging.buckets.b90), { tone: 'neg' })
+      ]),
+      EX.ui.table([
+        { label: t('customer'), cell: function (r) { return r.name; } },
+        { label: t('aging_0'), align: 'end', tnum: true, cell: function (r) { return r.b0 ? U.money(r.b0) : '—'; } },
+        { label: t('aging_31'), align: 'end', tnum: true, cell: function (r) { return r.b31 ? U.money(r.b31) : '—'; } },
+        { label: t('aging_61'), align: 'end', tnum: true, cell: function (r) { return r.b61 ? U.money(r.b61) : '—'; } },
+        { label: t('aging_90'), align: 'end', tnum: true, cell: function (r) { return r.b90 ? U.money(r.b90) : '—'; } },
+        { label: t('total'), align: 'end', tnum: true, cell: function (r) { return U.el('b', { text: U.money(r.total) }); } }
+      ], U.sortBy(ageRows, function (r) { return r.total; }, true), {
+        onRowClick: function (r) { EX.ui.go('customers', { customerId: r.id }); },
+        footer: ageRows.length ? [
+          { text: t('total') },
+          { text: U.money(aging.buckets.b0), align: 'end', tnum: true },
+          { text: U.money(aging.buckets.b31), align: 'end', tnum: true },
+          { text: U.money(aging.buckets.b61), align: 'end', tnum: true },
+          { text: U.money(aging.buckets.b90), align: 'end', tnum: true },
+          { text: U.money(aging.buckets.total), align: 'end', tnum: true }
+        ] : null
+      })
+    ]), {
+      subtitle: 'تُسدَّد الدفعات على أقدم نقلة آجلة أولًا (FIFO).'
+    }));
+  };
+
+  /* ======================= الإعدادات ======================= */
+  V.settings = function (host) {
+    const st = EX.store.settings();
+
+    /* بيانات المؤسسة */
+    const cForm = EX.ui.form([
+      { name: 'name', label: t('company_name') + ' (ع)', type: 'text', value: st.company.name || '', required: true },
+      { name: 'nameEn', label: t('company_name') + ' (EN)', type: 'text', value: st.company.nameEn || '' },
+      { name: 'phone', label: t('company_phone'), type: 'tel', value: st.company.phone || '' },
+      { name: 'address', label: t('company_address'), type: 'text', value: st.company.address || '' },
+      { name: 'crNo', label: t('cr_no'), type: 'text', value: st.company.crNo || '' },
+      { name: 'vatNo', label: t('vat_no'), type: 'text', value: st.company.vatNo || '' },
+      { name: 'vatEnabled', label: t('vat_enabled'), type: 'checkbox', value: !!st.vatEnabled, span: 2 },
+      { name: 'vatRate', label: t('vat_rate'), type: 'number', step: '0.5', min: 0, value: st.vatRate }
+    ]);
+    host.appendChild(EX.ui.card(t('company'), U.el('div', {}, [
+      cForm.node,
+      U.el('div', { class: 'btn-row', style: { marginTop: '12px' } }, [
+        U.el('button', {
+          class: 'btn primary', text: t('save'),
+          onclick: function () {
+            if (!cForm.valid()) return;
+            const v = cForm.get();
+            st.company = { name: v.name, nameEn: v.nameEn, phone: v.phone, address: v.address, crNo: v.crNo, vatNo: v.vatNo };
+            st.vatEnabled = !!v.vatEnabled;
+            st.vatRate = U.num(v.vatRate, 5);
+            EX.store.save();
+            EX.ui.toast(t('saved'), 'good');
+            EX.ui.renderShell();
+          }
+        })
+      ])
+    ]), { subtitle: 'تظهر هذه البيانات في سندات التسليم والفواتير وكشوف الحساب.' }));
+
+    /* اللغة والمظهر */
+    host.appendChild(EX.ui.card(t('settings_title'), U.el('div', { class: 'btn-row' }, [
+      U.el('button', {
+        class: 'btn' + (EX.i18n.lang === 'ar' ? ' primary' : ' ghost'), text: 'العربية',
+        onclick: function () { EX.app.setLang('ar'); }
+      }),
+      U.el('button', {
+        class: 'btn' + (EX.i18n.lang === 'en' ? ' primary' : ' ghost'), text: 'English',
+        onclick: function () { EX.app.setLang('en'); }
+      }),
+      U.el('span', { class: 'divider-v' }),
+      U.el('button', {
+        class: 'btn' + (st.theme === 'dark' ? ' primary' : ' ghost'), text: t('dark'),
+        onclick: function () { EX.app.setTheme('dark'); }
+      }),
+      U.el('button', {
+        class: 'btn' + (st.theme === 'light' ? ' primary' : ' ghost'), text: t('light'),
+        onclick: function () { EX.app.setTheme('light'); }
+      })
+    ])));
+
+    /* البيانات */
+    const counts = U.el('div', { class: 'meta-grid' }, [
+      ['nav_customers', EX.store.s.customers.length],
+      ['nav_loads', EX.store.s.loads.length],
+      ['nav_payments', EX.store.s.payments.length],
+      ['nav_expenses', EX.store.s.expenses.length],
+      ['nav_materials', EX.store.s.materials.length],
+      ['nav_trucks', EX.store.s.trucks.length]
+    ].map(function (p) {
+      return U.el('div', {}, [
+        U.el('span', { class: 'muted small', text: t(p[0]) }),
+        U.el('div', { class: 'tnum big', text: U.iso(String(p[1])) })
+      ]);
+    }));
+
+    host.appendChild(EX.ui.card(t('data'), U.el('div', {}, [
+      counts,
+      U.el('div', { class: 'btn-row', style: { marginTop: '12px' } }, [
+        U.el('button', {
+          class: 'btn', text: t('export_all'),
+          onclick: function () { EX.ui.saveFile('express-crusher-backup-' + U.today() + '.json', EX.store.exportJSON(), 'application/json'); }
+        }),
+        U.el('button', {
+          class: 'btn', text: t('import_all'),
+          onclick: function () {
+            const area = U.el('textarea', { rows: '10', placeholder: '{ … }' });
+            EX.ui.modal({
+              title: t('import_all'),
+              body: U.el('div', {}, [U.el('div', { class: 'notice', text: t('import_hint') }), area]),
+              confirmText: t('import_all'),
+              onConfirm: function () {
+                try {
+                  EX.store.importJSON(area.value);
+                  EX.i18n.setLang(EX.store.settings().lang);
+                  EX.ui.toast(t('import_done'), 'good');
+                  EX.app.applyLang();
+                  EX.app.applyTheme();
+                  EX.ui.go('dashboard');
+                } catch (e) {
+                  EX.ui.toast(t('import_bad'), 'bad');
+                  return false;
+                }
+              }
+            });
+          }
+        }),
+        U.el('button', {
+          class: 'btn ghost', text: t('sample_data'),
+          onclick: function () {
+            EX.ui.confirm(t('sample_hint'), function () {
+              EX.store.loadSample();
+              EX.ui.toast(t('saved'), 'good');
+              EX.ui.go('dashboard');
+            }, { confirmText: t('sample_data'), danger: false });
+          }
+        }),
+        U.el('div', { class: 'spacer' }),
+        U.el('button', {
+          class: 'btn ghost danger', text: t('reset_all'),
+          onclick: function () {
+            EX.ui.confirm(t('reset_confirm'), function () {
+              EX.store.reset();
+              EX.ui.toast(t('deleted'));
+              EX.ui.go('dashboard');
+            });
+          }
+        })
+      ]),
+      U.el('div', { class: 'notice', style: { marginTop: '12px' }, text: t('storage_note') })
+    ])));
+
+    host.appendChild(U.el('div', { class: 'footer-note' }, [
+      U.el('div', { text: t('app_name') + ' · ' + t('app_tagline') }),
+      U.el('div', { class: 'muted small', text: 'بيانات محلية بالكامل — بدون خادم وبدون إنترنت.' })
+    ]));
+  };
+})(window);
+
+</script>
+  <script>
+/* ===== assets/js/app.js ===== */
+/* كسارة اكسبريس — الإقلاع */
+(function (root) {
+  'use strict';
+  const EX = (root.EX = root.EX || {});
+  const U = EX.util;
+
+  const App = {
+    boot() {
+      EX.store.load();
+      const st = EX.store.settings();
+      EX.i18n.setLang(st.lang);
+      App.applyLang();
+      App.applyTheme();
+
+      const hash = (location.hash || '').replace('#', '');
+      if (hash && EX.views[hash]) EX.ui.route = hash;
+
+      EX.ui.renderShell();
+
+      root.addEventListener('hashchange', function () {
+        const h = (location.hash || '').replace('#', '');
+        if (h && EX.views[h] && h !== EX.ui.route) {
+          EX.ui.route = h;
+          EX.ui.ctx = {};
+          EX.ui.renderShell();
+        }
+      });
+      // الرسوم مرسومة على canvas بعرض ثابت، فتُعاد عند تغيّر المقاس
+      root.addEventListener('resize', U.debounce(function () { EX.ui.renderView(); }, 250));
+    },
+
+    applyTheme() {
+      document.documentElement.setAttribute('data-theme', EX.store.settings().theme === 'light' ? 'light' : 'dark');
+    },
+    setTheme(theme) {
+      EX.store.settings().theme = theme === 'light' ? 'light' : 'dark';
+      EX.store.save();
+      App.applyTheme();
+      EX.ui.renderShell();
+    },
+    toggleTheme() { App.setTheme(EX.store.settings().theme === 'dark' ? 'light' : 'dark'); },
+
+    applyLang() {
+      const lang = EX.i18n.lang;
+      document.documentElement.setAttribute('lang', lang);
+      document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+      const c = EX.store.settings().company;
+      document.title = (lang === 'en' ? (c.nameEn || c.name) : c.name) || EX.t('app_name');
+    },
+    setLang(lang) {
+      EX.i18n.setLang(lang);
+      EX.store.settings().lang = EX.i18n.lang;
+      EX.store.save();
+      App.applyLang();
+      EX.ui.renderShell();
+    },
+    toggleLang() { App.setLang(EX.i18n.lang === 'ar' ? 'en' : 'ar'); }
+  };
+
+  EX.app = App;
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { App.boot(); });
+  } else {
+    App.boot();
+  }
+})(window);
+
+</script>
+</body>
+</html>
