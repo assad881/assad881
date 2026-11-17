@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>تمارين الورشة</title><meta name="theme-color" content="#F6F0E4">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=JetBrains+Mono:wght@500&family=Instrument+Serif:ital@1&display=swap">
+<style>
+html{-webkit-text-size-adjust:100%}body{margin:0}
+:root{--bg:#F6F0E4;--card:#FFFDF8;--ink:#1D2330;--mute:#5A6372;--line:rgba(29,35,48,.13);--acc:#C96A06;--acc-soft:rgba(247,148,29,.13);
+ --grn:#4F7A12;--grn-soft:rgba(141,198,63,.18);--red:#B4231F;--red-soft:rgba(200,16,46,.09);--chip:#EFE6D5;--on-acc:#fff;
+ --ar:'Tajawal',system-ui,-apple-system,'Segoe UI',sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace;--serif:'Instrument Serif',Georgia,serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181F;--card:#1D2129;--ink:#ECE7DD;--mute:#A3A9B4;--line:rgba(236,231,221,.14);
+ --acc:#F7A341;--acc-soft:rgba(247,148,29,.16);--grn:#A5D65C;--grn-soft:rgba(141,198,63,.16);--red:#FF8A80;--red-soft:rgba(255,99,90,.12);--chip:#272C36;--on-acc:#1D2330;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15181F;--card:#1D2129;--ink:#ECE7DD;--mute:#A3A9B4;--line:rgba(236,231,221,.14);
+ --acc:#F7A341;--acc-soft:rgba(247,148,29,.16);--grn:#A5D65C;--grn-soft:rgba(141,198,63,.16);--red:#FF8A80;--red-soft:rgba(255,99,90,.12);--chip:#272C36;--on-acc:#1D2330;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:500 16px/1.7 var(--ar);direction:rtl;
+ padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+.wrap{max-width:720px;margin:0 auto}
+header{padding:22px 0 8px}
+.kick{font:500 11px var(--mono);letter-spacing:.2em;color:var(--acc);direction:ltr;text-align:right}
+h1{font:900 30px/1.25 var(--ar);margin:6px 0 4px;text-wrap:balance}
+h1 em{font:italic 400 30px var(--serif);color:var(--grn)}
+.sub{color:var(--mute);margin:0;font-size:15px}
+.priv{margin:12px 0 0;padding:9px 12px;border-radius:10px;background:var(--red-soft);color:var(--red);font-size:13.5px;font-weight:700}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 0;margin-top:8px;border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tabs a{display:block;text-align:center;text-decoration:none;color:var(--ink);background:var(--chip);border-radius:12px;padding:8px 4px;font:800 14px/1.3 var(--ar)}
+.tabs a small{display:block;font:500 10px var(--mono);letter-spacing:.12em;color:var(--mute);direction:ltr}
+.tabs a[aria-current="page"]{background:var(--ink);color:var(--bg)}.tabs a[aria-current="page"] small{color:var(--bg);opacity:.7}
+section{padding-top:18px}
+h2{font:900 22px/1.3 var(--ar);margin:0 0 4px}
+.lead{color:var(--mute);margin:0 0 14px;font-size:15px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+label{display:block;font-weight:800;margin-bottom:6px}
+textarea,input[type=text]{width:100%;font:500 16px/1.6 var(--ar);color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;resize:vertical}
+textarea:focus,input:focus{outline:none;border-color:var(--acc)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+button{font:800 15px var(--ar);border:0;border-radius:12px;padding:11px 16px;cursor:pointer;background:var(--acc);color:var(--on-acc)}
+button.ghost{background:var(--chip);color:var(--ink)}
+button:disabled{opacity:.5;cursor:default}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chips button{background:var(--chip);color:var(--ink);font:700 13px var(--ar);padding:6px 10px;border-radius:999px}
+.status{color:var(--mute);font-size:14px;margin-top:10px;min-height:1px}
+.status.err{color:var(--red)}
+.think{display:inline-flex;gap:4px;vertical-align:middle;margin-inline-start:6px}.think i{width:6px;height:6px;border-radius:50%;background:var(--acc);animation:b 1s infinite}
+.think i:nth-child(2){animation-delay:.15s}.think i:nth-child(3){animation-delay:.3s}@keyframes b{0%,100%{opacity:.25}50%{opacity:1}}
+.pico{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pico div{background:var(--bg);border-radius:12px;padding:10px 12px;border:1px solid var(--line);min-width:0}
+.pico b{display:block;font:500 11px var(--mono);letter-spacing:.14em;color:var(--acc);direction:ltr;text-align:right}
+.q{font:800 18px/1.6 var(--ar);margin:12px 0 4px;padding:12px 14px;border-inline-start:4px solid var(--grn);background:var(--grn-soft);border-radius:4px 12px 12px 4px}
+.qe{direction:ltr;text-align:left;color:var(--mute);font-size:14px;margin:0 0 6px}
+.tag{display:inline-block;font:800 13px var(--ar);padding:3px 10px;border-radius:999px;background:var(--acc-soft);color:var(--acc);margin-inline-end:6px}
+.finer{list-style:none;padding:0;margin:8px 0 0}
+.finer li{display:flex;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+.finer li b{font:500 12px var(--mono);color:var(--grn);min-width:22px;direction:ltr;padding-top:3px}
+.finer li.warn b{color:var(--red)}
+h3{font:900 16px var(--ar);margin:14px 0 4px}
+ul.plain{margin:4px 0 0;padding-inline-start:20px}
+.tree .step{font:800 17px/1.5 var(--ar);margin:4px 0 10px}
+.tree .path{font-size:13px;color:var(--mute);margin-bottom:8px}
+.result{border-inline-start:4px solid var(--acc);padding:10px 14px;background:var(--acc-soft);border-radius:4px 12px 12px 4px}
+.result b{font-size:19px;font-weight:900}
+.links{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.links a{display:flex;justify-content:space-between;gap:10px;text-decoration:none;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-weight:700}
+.links a span{font:500 12px var(--mono);color:var(--mute);direction:ltr}
+.verdict{font:900 17px var(--ar);margin:4px 0}
+.ok{color:var(--grn)}.bad{color:var(--red)}.mid{color:var(--acc)}
+.chat{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.msg{padding:10px 14px;border-radius:14px;max-width:92%;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.me{align-self:flex-start;background:var(--ink);color:var(--bg);border-end-start-radius:4px}
+.msg.ai{align-self:flex-end;background:var(--card);border:1px solid var(--line);border-end-end-radius:4px}
+.off{display:none}
+.nojs .off{display:block}
+.note{font-size:13px;color:var(--mute);margin-top:8px}
+footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--mute)}
+footer .m{font:500 11px var(--mono);letter-spacing:.14em;direction:ltr;display:block;text-align:right;margin-bottom:4px}
+@media (max-width:420px){.pico{grid-template-columns:1fr}h1{font-size:26px}}
+
+.big{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.big a{display:block;text-align:center;text-decoration:none;border-radius:14px;padding:14px;font:800 17px var(--ar)}
+.big a.p{background:var(--acc);color:var(--on-acc)} .big a.s{background:var(--chip);color:var(--ink)}
+.big a small{display:block;font:500 12px var(--mono);opacity:.8;direction:ltr}
+.ex{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+.ex:target{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-soft)}
+.ex .no{flex:none;width:40px;height:40px;border-radius:50%;background:var(--acc-soft);color:var(--acc);font:900 18px/40px var(--ar);text-align:center}
+.ex .tt{flex:1;min-width:0} .ex strong{display:block;font-weight:800;line-height:1.4} .ex small{display:block;font:500 12px var(--mono);color:var(--mute);direction:ltr;text-align:right}
+.ex .go{flex:none;font:500 12px var(--mono);color:var(--grn);direction:ltr}
+</style></head><body>
+<div class="wrap">
+<header>
+ <div class="kick">RESEARCH &amp; EBP WORKSHOP · EXERCISES</div>
+ <h1>تمارين الورشة <em>على جهازك</em></h1>
+ <p class="sub">كل تمرين في ملف صغير. افتحه عندما يعلنه الميسّر، أو نزّل الكل الآن مرة واحدة.</p>
+</header>
+<div class="big">
+ <a class="p" href="all-exercises.zip" download>نزّل كل التمارين (ملف مضغوط)<small>ZIP · ~4.5 MB</small></a>
+ <a class="s" href="workbook.pdf" target="_blank" rel="noopener">كتيّب المشارك كاملًا في ملف واحد<small>PDF · 28 pages</small></a>
+</div>
+<h2 style="margin-top:18px">التمارين بالترتيب</h2>
+<p class="lead">اكتب إجاباتك في تطبيق الملاحظات، أو مباشرة على الملف بأداة التعليق في هاتفك.</p>
+<a class="ex" id="t0" href="ex00.pdf" target="_blank" rel="noopener"><span class="no">0</span><span class="tt"><strong>الافتتاح: حقيقة أم خرافة؟ + مشكلة من عملي</strong><small>Opening</small></span><span class="go">PDF ↓</span></a>
+<a class="ex" id="t1" href="ex01.pdf" target="_blank" rel="noopener"><span class="no">1</span><span class="tt"><strong>ابنِ هرم الأدلة</strong><small>Evidence Pyramid</small></span><span class="go">PDF ↓</span></a>
+<a class="ex" id="t2" href="ex02.pdf" target="_blank" rel="noopener"><span class="no">2</span><span class="tt"><strong>حوّل بطاقتك إلى سؤال · PICO · FINER</strong><small>PICO · FINER</small></span><span class="go">PDF ↓</span></a>
+<a class="ex" id="t3" href="ex03.pdf" target="_blank" rel="noopener"><span class="no">3</span><span class="tt"><strong>طابِق التصميم</strong><small>Match the Design</small></span><span class="go">PDF ↓</span></a>
+<a class="ex" id="t4" href="ex04.pdf" target="_blank" rel="noopener"><span class="no">4</span><span class="tt"><strong>لوحة البحث: مقترحك في صفحة</strong><small>Research Canvas</small></span><span class="go">PDF ↓</span></a>
+<a class="ex" id="t6" href="ex06.pdf" target="_blank" rel="noopener"><span class="no">6</span><span class="tt"><strong>المسار الرسمي: سجّل، قدّم، اجمع</strong><small>Official Pathway</small></span><span class="go">PDF ↓</span></a>
+<a class="ex" id="t7" href="ex07.pdf" target="_blank" rel="noopener"><span class="no">7</span><span class="tt"><strong>محكمة الحالات</strong><small>Case Court</small></span><span class="go">PDF ↓</span></a>
+<a class="ex" id="t8" href="ex08.pdf" target="_blank" rel="noopener"><span class="no">8</span><span class="tt"><strong>اكتب بيان الإفصاح</strong><small>AI Disclosure</small></span><span class="go">PDF ↓</span></a>
+<a class="ex" id="t9" href="ex09.pdf" target="_blank" rel="noopener"><span class="no">9</span><span class="tt"><strong>إنسان أم آلة؟</strong><small>Human or Machine</small></span><span class="go">PDF ↓</span></a>
+<a class="ex" id="t10" href="ex10.pdf" target="_blank" rel="noopener"><span class="no">10</span><span class="tt"><strong>صيد المرجع المزيف</strong><small>Fake Reference Hunt</small></span><span class="go">PDF ↓</span></a>
+<a class="ex" id="t11" href="ex11.pdf" target="_blank" rel="noopener"><span class="no">11</span><span class="tt"><strong>بطاقة الالتزام: خارطة 90 يومًا</strong><small>90-Day Commitment</small></span><span class="go">PDF ↓</span></a>
+<a class="ex" id="t12" href="ex12.pdf" target="_blank" rel="noopener"><span class="no">12</span><span class="tt"><strong>تحدي الطاولات الأخير</strong><small>Final Challenge</small></span><span class="go">PDF ↓</span></a>
+
+<a class="ex" href="quickref.pdf" target="_blank" rel="noopener"><span class="no">★</span><span class="tt"><strong>مرجع سريع: التصاميم، PICO وFINER وIMRaD، الذكاء الاصطناعي، المصطلحات</strong><small>Quick reference</small></span><span class="go">PDF ↓</span></a>
+<div class="links" style="margin-top:14px"><a href="../buddy/"><strong>مساعد الورشة: سؤال PICO، التصميم، فحص المرجع</strong><span>buddy ↗</span></a></div>
+<footer><span class="m">AL-DHAHIRAH · 18.11.2026</span>ورشة «البحث العلمي والممارسات القائمة على الأدلة» · إعداد: أسعد الغافري. © 2026 جميع الحقوق محفوظة؛ للاستخدام الشخصي للمشاركين.</footer>
+</div></body></html>
