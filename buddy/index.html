@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>مساعد الورشة البحثي</title>
+<meta name="description" content="مساعد ورشة البحث العلمي والممارسات القائمة على الأدلة: سؤال PICO، اختيار التصميم، فحص المراجع، وأسئلة شائعة.">
+<meta name="theme-color" content="#F6F0E4">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=JetBrains+Mono:wght@500&family=Instrument+Serif:ital@1&display=swap">
+<style>
+html{-webkit-text-size-adjust:100%}body{margin:0}
+:root{--bg:#F6F0E4;--card:#FFFDF8;--ink:#1D2330;--mute:#5A6372;--line:rgba(29,35,48,.13);--acc:#C96A06;--acc-soft:rgba(247,148,29,.13);
+ --grn:#4F7A12;--grn-soft:rgba(141,198,63,.18);--red:#B4231F;--red-soft:rgba(200,16,46,.09);--chip:#EFE6D5;--on-acc:#fff;
+ --ar:'Tajawal',system-ui,-apple-system,'Segoe UI',sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace;--serif:'Instrument Serif',Georgia,serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181F;--card:#1D2129;--ink:#ECE7DD;--mute:#A3A9B4;--line:rgba(236,231,221,.14);
+ --acc:#F7A341;--acc-soft:rgba(247,148,29,.16);--grn:#A5D65C;--grn-soft:rgba(141,198,63,.16);--red:#FF8A80;--red-soft:rgba(255,99,90,.12);--chip:#272C36;--on-acc:#1D2330;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15181F;--card:#1D2129;--ink:#ECE7DD;--mute:#A3A9B4;--line:rgba(236,231,221,.14);
+ --acc:#F7A341;--acc-soft:rgba(247,148,29,.16);--grn:#A5D65C;--grn-soft:rgba(141,198,63,.16);--red:#FF8A80;--red-soft:rgba(255,99,90,.12);--chip:#272C36;--on-acc:#1D2330;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:500 16px/1.7 var(--ar);direction:rtl;
+ padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+.wrap{max-width:720px;margin:0 auto}
+header{padding:22px 0 8px}
+.kick{font:500 11px var(--mono);letter-spacing:.2em;color:var(--acc);direction:ltr;text-align:right}
+h1{font:900 30px/1.25 var(--ar);margin:6px 0 4px;text-wrap:balance}
+h1 em{font:italic 400 30px var(--serif);color:var(--grn)}
+.sub{color:var(--mute);margin:0;font-size:15px}
+.priv{margin:12px 0 0;padding:9px 12px;border-radius:10px;background:var(--red-soft);color:var(--red);font-size:13.5px;font-weight:700}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 0;margin-top:8px;border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tabs a{display:block;text-align:center;text-decoration:none;color:var(--ink);background:var(--chip);border-radius:12px;padding:8px 4px;font:800 14px/1.3 var(--ar)}
+.tabs a small{display:block;font:500 10px var(--mono);letter-spacing:.12em;color:var(--mute);direction:ltr}
+.tabs a[aria-current="page"]{background:var(--ink);color:var(--bg)}.tabs a[aria-current="page"] small{color:var(--bg);opacity:.7}
+section{padding-top:18px}
+h2{font:900 22px/1.3 var(--ar);margin:0 0 4px}
+.lead{color:var(--mute);margin:0 0 14px;font-size:15px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+label{display:block;font-weight:800;margin-bottom:6px}
+textarea,input[type=text]{width:100%;font:500 16px/1.6 var(--ar);color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;resize:vertical}
+textarea:focus,input:focus{outline:none;border-color:var(--acc)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+button{font:800 15px var(--ar);border:0;border-radius:12px;padding:11px 16px;cursor:pointer;background:var(--acc);color:var(--on-acc)}
+button.ghost{background:var(--chip);color:var(--ink)}
+button:disabled{opacity:.5;cursor:default}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chips button{background:var(--chip);color:var(--ink);font:700 13px var(--ar);padding:6px 10px;border-radius:999px}
+.status{color:var(--mute);font-size:14px;margin-top:10px;min-height:1px}
+.status.err{color:var(--red)}
+.think{display:inline-flex;gap:4px;vertical-align:middle;margin-inline-start:6px}.think i{width:6px;height:6px;border-radius:50%;background:var(--acc);animation:b 1s infinite}
+.think i:nth-child(2){animation-delay:.15s}.think i:nth-child(3){animation-delay:.3s}@keyframes b{0%,100%{opacity:.25}50%{opacity:1}}
+.pico{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pico div{background:var(--bg);border-radius:12px;padding:10px 12px;border:1px solid var(--line);min-width:0}
+.pico b{display:block;font:500 11px var(--mono);letter-spacing:.14em;color:var(--acc);direction:ltr;text-align:right}
+.q{font:800 18px/1.6 var(--ar);margin:12px 0 4px;padding:12px 14px;border-inline-start:4px solid var(--grn);background:var(--grn-soft);border-radius:4px 12px 12px 4px}
+.qe{direction:ltr;text-align:left;color:var(--mute);font-size:14px;margin:0 0 6px}
+.tag{display:inline-block;font:800 13px var(--ar);padding:3px 10px;border-radius:999px;background:var(--acc-soft);color:var(--acc);margin-inline-end:6px}
+.finer{list-style:none;padding:0;margin:8px 0 0}
+.finer li{display:flex;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+.finer li b{font:500 12px var(--mono);color:var(--grn);min-width:22px;direction:ltr;padding-top:3px}
+.finer li.warn b{color:var(--red)}
+h3{font:900 16px var(--ar);margin:14px 0 4px}
+ul.plain{margin:4px 0 0;padding-inline-start:20px}
+.tree .step{font:800 17px/1.5 var(--ar);margin:4px 0 10px}
+.tree .path{font-size:13px;color:var(--mute);margin-bottom:8px}
+.result{border-inline-start:4px solid var(--acc);padding:10px 14px;background:var(--acc-soft);border-radius:4px 12px 12px 4px}
+.result b{font-size:19px;font-weight:900}
+.links{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.links a{display:flex;justify-content:space-between;gap:10px;text-decoration:none;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-weight:700}
+.links a span{font:500 12px var(--mono);color:var(--mute);direction:ltr}
+.verdict{font:900 17px var(--ar);margin:4px 0}
+.ok{color:var(--grn)}.bad{color:var(--red)}.mid{color:var(--acc)}
+.chat{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.msg{padding:10px 14px;border-radius:14px;max-width:92%;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.me{align-self:flex-start;background:var(--ink);color:var(--bg);border-end-start-radius:4px}
+.msg.ai{align-self:flex-end;background:var(--card);border:1px solid var(--line);border-end-end-radius:4px}
+.off{display:none}
+.nojs .off{display:block}
+.note{font-size:13px;color:var(--mute);margin-top:8px}
+footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--mute)}
+footer .m{font:500 11px var(--mono);letter-spacing:.14em;direction:ltr;display:block;text-align:right;margin-bottom:4px}
+@media (max-width:420px){.pico{grid-template-columns:1fr}h1{font-size:26px}}
+
+.fh{display:block;font-size:13px;color:var(--mute);margin:2px 0 6px}
+.pico input{background:var(--card)}
+.chips button[aria-pressed="true"]{background:var(--acc);color:var(--on-acc)}
+.fdesc{display:block;font-size:14px;color:var(--mute)}
+details.faq{padding:0}
+details.faq summary{cursor:pointer;padding:14px 16px;font-weight:800;list-style:none}
+details.faq summary::-webkit-details-marker{display:none}
+details.faq summary::before{content:"+";display:inline-block;width:20px;color:var(--acc);font-weight:900}
+details.faq[open] summary::before{content:"−"}
+details.faq p{margin:0;padding:0 16px 14px;color:var(--ink)}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <div class="kick">RESEARCH &amp; EBP WORKSHOP · RESEARCH BUDDY</div>
+ <h1>مساعد الورشة <em>Research Buddy</em></h1>
+ <p class="sub">من المشكلة إلى سؤال بحثي، ثم التصميم المناسب، ثم التحقق من المراجع. يعمل على هاتفك مباشرة، ولا يرسل ما تكتبه إلى أي جهة.</p>
+ <p class="priv">لا تكتب أي بيانات تعرّف مريضًا أو زميلًا (اسم، رقم مدني، رقم ملف).</p>
+</header>
+
+<nav><div class="tabs" role="tablist">
+ <a href="#pico" data-tab="pico">سؤالي<small>PICO</small></a>
+ <a href="#design" data-tab="design">التصميم<small>DESIGN</small></a>
+ <a href="#ref" data-tab="ref">المرجع<small>CHECK</small></a>
+ <a href="#ask" data-tab="ask">أسئلة<small>FAQ</small></a>
+</div></nav>
+
+<!-- ============ PICO ============ -->
+<section id="v-pico">
+ <h2>ابنِ سؤالك البحثي بصيغة PICO</h2>
+ <p class="lead">اختر نوع سؤالك، واملأ الخانات، فيظهر سؤالك جاهزًا مع التصميم المقترح.</p>
+ <div class="card">
+  <label>1. ما نوع سؤالك؟</label>
+  <div class="chips" id="qtype"></div>
+  <p class="note" id="qtype-hint"></p>
+ </div>
+ <div class="card">
+  <label>2. املأ الخانات</label>
+  <div class="pico" style="margin-top:8px">
+   <div><b>P · POPULATION</b><span class="fh">من هم المشاركون؟ وأين؟</span><input type="text" id="mP" placeholder="مرضى السكري البالغون في مراكز الولاية"></div>
+   <div><b id="lI">I · INTERVENTION</b><span class="fh" id="hI">ما الذي ستطبقه أو تقيسه؟</span><input type="text" id="mI" placeholder="تذكير برسالة نصية"></div>
+   <div><b>C · COMPARISON</b><span class="fh">مقارنة بماذا؟ (اختياري)</span><input type="text" id="mC" placeholder="الرعاية المعتادة"></div>
+   <div><b>O · OUTCOME</b><span class="fh">ما النتيجة التي ستقيسها؟</span><input type="text" id="mO" placeholder="الحضور لفحص العين السنوي"></div>
+  </div>
+  <div class="row"><label style="margin:0;font-weight:700"><input type="checkbox" id="mT" style="width:auto;margin-inline-end:6px">أضف مدة زمنية (T)</label><input type="text" id="mTv" placeholder="خلال 6 أشهر" style="flex:1;min-width:140px" hidden></div>
+ </div>
+ <div class="card" id="pico-out">
+  <h3 style="margin-top:0">سؤالك</h3>
+  <div class="q" id="mQ">املأ P وI وO ليظهر سؤالك هنا.</div>
+  <div class="row"><button class="ghost" id="copyQ">انسخ السؤال</button></div>
+  <h3>التصميم المقترح</h3>
+  <div class="result" id="mD"><b>—</b><div>اختر نوع السؤال أولًا.</div></div>
+  <p class="note">للتأكد من التصميم جرّب تبويب «التصميم» وأجب عن أسئلته الثلاثة.</p>
+ </div>
+ <div class="card">
+  <h3 style="margin-top:0">3. اختبر سؤالك بمعايير FINER</h3>
+  <ul class="finer chk" id="finer"></ul>
+  <div class="result" id="finerR" style="margin-top:10px"><b>0 / 5</b><div>ضع علامة على ما ينطبق على سؤالك.</div></div>
+ </div>
+</section>
+
+<!-- ============ DESIGN ============ -->
+<section id="v-design" hidden>
+ <h2>أي تصميم يناسب سؤالي؟</h2>
+ <p class="lead">ثلاثة أسئلة نعم/لا، كما في الورشة: التصميم يتبع السؤال.</p>
+ <div class="card tree" id="tree"></div>
+ <div class="card">
+  <h3 style="margin-top:0">إرشادات الكتابة لكل تصميم</h3>
+  <ul class="plain">
+   <li><b>STROBE</b>: الدراسات الرصدية (مقطعية، حالات وشواهد، أترابية)</li>
+   <li><b>CONSORT</b>: التجارب العشوائية المضبوطة</li>
+   <li><b>PRISMA</b>: المراجعات المنهجية والتحليل التلوي</li>
+   <li><b>STARD</b>: دراسات دقة الاختبارات التشخيصية</li>
+   <li><b>COREQ</b>: البحوث النوعية (مقابلات، مجموعات تركيز)</li>
+  </ul>
+  <div class="links"><a href="https://www.equator-network.org/" target="_blank" rel="noopener"><strong>كل الإرشادات في مكان واحد</strong><span>equator-network.org ↗</span></a></div>
+ </div>
+</section>
+
+<!-- ============ REFERENCE ============ -->
+<section id="v-ref" hidden>
+ <h2>افحص مرجعًا في 30 ثانية</h2>
+ <p class="lead">الصق المرجع كما هو. ستظهر عناصره وعلامات تستحق الانتباه، ثم تتحقق أنت بالروابط.</p>
+ <div class="card">
+  <label for="refin">المرجع</label>
+  <textarea id="refin" rows="4" style="direction:ltr;text-align:left" placeholder="Smith J, et al. Title of the article. J Name. 2021;12(3):45-52. doi:10.xxxx/xxxxx"></textarea>
+  <div class="row"><button id="ref-go">افحص المرجع</button><button class="ghost" id="ref-clear">مسح</button></div>
+ </div>
+ <div id="ref-out"></div>
+ <div class="card">
+  <h3 style="margin-top:0">خطوات الثلاثين ثانية</h3>
+  <ol class="plain" style="padding-inline-start:22px;margin:0">
+   <li>افتح الـ DOI: هل يقود إلى المقال نفسه؟</li>
+   <li>ابحث بالعنوان في PubMed أو Google Scholar.</li>
+   <li>طابق المؤلفين والسنة والمجلة والمجلد والصفحات.</li>
+   <li>اقرأ الملخص: هل يقول المرجع فعلًا ما تنسبه إليه؟</li>
+  </ol>
+  <p class="note">الفحص هنا شكلي فقط ولا يؤكد وجود المرجع. التأكيد يكون بالروابط.</p>
+ </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="v-ask" hidden>
+ <h2>أسئلة شائعة من محتوى الورشة</h2>
+ <p class="lead">ابحث بكلمة، أو افتح السؤال الذي يهمك.</p>
+ <div class="card" style="padding:12px"><input type="text" id="faqq" placeholder="ابحث: عينة، تشابه، إفصاح، e-Survey…"></div>
+ <div id="faq"></div>
+ <p class="note" id="faq-none" hidden>لا توجد نتيجة. اسأل الميسّر أو نقطة ارتكاز البحوث.</p>
+</section>
+
+<footer>
+ <span class="m">AL-DHAHIRAH · 18.11.2026</span>
+ <div class="links" style="margin:6px 0 12px">
+  <a href="https://forms.gle/FWo9u82djPHsnqP26" target="_blank" rel="noopener"><strong>سجّل كباحث جديد</strong><span>forms.gle ↗</span></a>
+  <a href="https://mohcsr.gov.om/my-researches/" target="_blank" rel="noopener"><strong>منصة البحوث (تسجيل الدخول)</strong><span>mohcsr.gov.om ↗</span></a>
+  <a href="https://survey.moh.gov.om/admin" target="_blank" rel="noopener"><strong>MOH e-Survey (واجهة الباحث)</strong><span>survey.moh.gov.om ↗</span></a>
+ </div>
+ ورشة «البحث العلمي والممارسات القائمة على الأدلة» · إعداد: أسعد الغافري، نقطة ارتكاز البحوث والابتكار بمحافظة الظاهرة. للتواصل: <span style="direction:ltr;unicode-bidi:isolate">researchdha20@gmail.com</span>
+</footer>
+</div>
+
+<script>
+(function(){
+var $=function(id){return document.getElementById(id)};
+function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
+
+/* ---------- tabs ---------- */
+var TABS=['pico','design','ref','ask'];
+function route(){var h=(location.hash||'').slice(1);if(TABS.indexOf(h)<0)h='pico';
+ TABS.forEach(function(t){$('v-'+t).hidden=t!==h;var a=document.querySelector('[data-tab="'+t+'"]');if(t===h)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});}
+window.addEventListener('hashchange',function(){route();window.scrollTo(0,0);});route();
+
+/* ---------- PICO ---------- */
+var TYPES=[
+ {k:'tx',l:'علاج أو تدخل',h:'هل يحسّن تدخلٌ ما نتيجةً ما؟',I:'I · INTERVENTION',hi:'ما التدخل الذي ستطبقه؟',
+  q:function(P,I,C,O,T){return 'لدى '+P+'، هل '+I+(C?' مقارنةً بـ'+C:'')+' يحسّن '+O+T+'؟'},
+  d:['تجربة عشوائية محكمة','Randomized Controlled Trial · CONSORT','أقوى دليل لسؤال علاجي. إن تعذّر التوزيع العشوائي فدراسة شبه تجريبية (قبل/بعد).']},
+ {k:'risk',l:'عامل خطر أو سبب',h:'هل يرتبط التعرض لعامل ما بحدوث نتيجة؟',I:'E · EXPOSURE',hi:'ما العامل أو التعرض؟',
+  q:function(P,I,C,O,T){return 'لدى '+P+'، هل '+I+(C?' مقارنةً بـ'+C:'')+' يرتبط بزيادة خطر '+O+T+'؟'},
+  d:['دراسة أترابية أو حالات وشواهد','Cohort / Case-control · STROBE','الأترابية تتبع المعرّضين للأمام. إن كانت النتيجة نادرة فابدأ منها بدراسة حالات وشواهد.']},
+ {k:'prev',l:'انتشار أو وصف',h:'كم نسبة المشكلة؟ وما العوامل المرتبطة بها؟',I:'I · VARIABLE',hi:'ما الذي تقيسه؟ (معرفة، ممارسة، حالة…)',
+  q:function(P,I,C,O,T){return 'ما '+(O||'مستوى')+' '+I+' لدى '+P+(C?' مقارنةً بـ'+C:'')+T+'؟'},
+  d:['دراسة مقطعية','Cross-sectional · STROBE','الأنسب لأسئلة الانتشار واستبيانات KAP. تبيّن الارتباط لا السببية.']},
+ {k:'dx',l:'تشخيص أو اختبار',h:'ما دقة اختبار في كشف حالة؟',I:'I · INDEX TEST',hi:'ما الاختبار الذي تقيّمه؟',
+  q:function(P,I,C,O,T){return 'لدى '+P+'، ما دقة '+I+(C?' مقارنةً بـ'+C:' مقارنةً بالاختبار المرجعي')+' في تشخيص '+O+T+'؟'},
+  d:['دراسة دقة تشخيصية','Diagnostic accuracy (cross-sectional) · STARD','قارن الاختبار بالمعيار المرجعي واحسب الحساسية والنوعية ومنحنى ROC.']},
+ {k:'prog',l:'إنذار ومآل',h:'ما الذي يتنبأ بمآل المرضى؟',I:'I · PROGNOSTIC FACTOR',hi:'ما العامل الذي قد يتنبأ بالمآل؟',
+  q:function(P,I,C,O,T){return 'لدى '+P+'، هل '+I+(C?' مقارنةً بـ'+C:'')+' يتنبأ بـ'+O+T+'؟'},
+  d:['دراسة أترابية','Cohort (prospective or retrospective) · STROBE','المتابعة عبر الزمن. الاسترجاعية من السجلات أسرع وأقل كلفة.']},
+ {k:'qual',l:'خبرة ومعنى',h:'لماذا وكيف يعيش الناس تجربة ما؟',I:'I · PHENOMENON',hi:'ما الظاهرة أو التجربة؟',
+  q:function(P,I,C,O,T){return 'كيف يصف '+P+' تجربتهم مع '+I+(O?' من حيث '+O:'')+T+'؟'},
+  d:['بحث نوعي','Qualitative (interviews, focus groups) · COREQ','عينة هادفة حتى التشبع، وتحليل موضوعي (Thematic analysis).']}];
+var cur=TYPES[0];
+TYPES.forEach(function(t,i){var b=el('button',null,t.l);b.setAttribute('aria-pressed',i===0);b.onclick=function(){cur=t;[].forEach.call($('qtype').children,function(x){x.setAttribute('aria-pressed',x===b)});draw();};$('qtype').appendChild(b);});
+function v(id){return $(id).value.trim();}
+function draw(){
+ $('qtype-hint').textContent=cur.h;$('lI').textContent=cur.I;$('hI').textContent=cur.hi;
+ var P=v('mP'),I=v('mI'),C=v('mC'),O=v('mO'),T=$('mT').checked&&v('mTv')?' '+v('mTv'):'';
+ var ok=P&&I&&(O||cur.k==='qual');
+ $('mQ').textContent=ok?cur.q(P,I,C,O,T):'املأ P وI وO ليظهر سؤالك هنا.';
+ var d=$('mD');d.innerHTML='';d.appendChild(el('b',null,cur.d[0]));var e=el('div','qe',cur.d[1]);e.style.margin='2px 0 6px';d.appendChild(e);d.appendChild(el('div',null,cur.d[2]));
+}
+['mP','mI','mC','mO','mTv'].forEach(function(k){$(k).addEventListener('input',draw);});
+$('mT').addEventListener('change',function(){$('mTv').hidden=!this.checked;draw();});
+$('copyQ').onclick=function(){var t=$('mQ').textContent,b=this;
+ function done(){b.textContent='نُسخ ✓';setTimeout(function(){b.textContent='انسخ السؤال'},1500);}
+ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){sel()});}else sel();
+ function sel(){var r=document.createRange();r.selectNodeContents($('mQ'));var s=getSelection();s.removeAllRanges();s.addRange(r);}};
+draw();
+var FIN=[['F','Feasible · قابل للتنفيذ','لديّ الوقت والعينة والبيانات والمهارة خلال مدة معقولة'],['I','Interesting · مثير للاهتمام','يهمني ويهم زملائي ومن يتخذ القرار'],['N','Novel · جديد','يضيف شيئًا: مكان جديد، فئة جديدة، أو تحديث لنتيجة قديمة'],['E','Ethical · أخلاقي','لا يعرّض المشاركين لضرر، وسيجتاز لجنة الأخلاقيات'],['R','Relevant · ذو صلة','نتيجته ستغيّر ممارسة أو قرارًا في مؤسستي']];
+FIN.forEach(function(f){var li=el('li');var lab=el('label');lab.style.cssText='display:flex;gap:10px;align-items:flex-start;font-weight:500;margin:0;cursor:pointer';
+ var c=document.createElement('input');c.type='checkbox';c.style.cssText='width:22px;height:22px;flex:none;margin-top:4px';c.onchange=fin;
+ var nm=f[1].split(' · '),t=el('span');t.appendChild(el('strong',null,nm[1]+' '));var en=el('span',null,'('+f[0]+' · '+nm[0]+')');en.style.cssText='font:500 12px var(--mono);color:var(--grn);direction:ltr;unicode-bidi:isolate';t.appendChild(en);t.appendChild(el('span','fdesc',f[2]));
+ lab.appendChild(c);lab.appendChild(t);li.appendChild(lab);$('finer').appendChild(li);});
+function fin(){var n=$('finer').querySelectorAll('input:checked').length,r=$('finerR');r.innerHTML='';r.appendChild(el('b',null,n+' / 5'));
+ var miss=[];[].forEach.call($('finer').querySelectorAll('input'),function(c,i){if(!c.checked)miss.push(FIN[i][1].split(' · ')[1]);});
+ r.appendChild(el('div',null,n===5?'سؤالك جاهز للخطوة التالية: كتابة المقترح.':n>=3?'راجع ما ينقصه: '+miss.join('، ')+'.':'أعد صياغة السؤال أو ضيّق نطاقه، ثم أعد الاختبار.'));}
+
+/* ---------- DESIGN tree ---------- */
+var T={q:'هل سيُعطي الباحث تدخّلًا للمشاركين (علاج، برنامج تثقيفي، أداة)؟',
+ yes:{q:'هل يُوزَّع المشاركون على المجموعات عشوائيًا؟',yes:{r:'تجربة عشوائية محكمة',e:'Randomized Controlled Trial · CONSORT',d:'أقوى دليل لسؤال علاجي. تحتاج موافقة أخلاقية وتسجيلًا للتجربة.'},
+  no:{r:'دراسة شبه تجريبية',e:'Quasi-experimental (قبل/بعد) · TREND',d:'مناسبة لبرامج التحسين في المراكز حين يتعذر التوزيع العشوائي. انتبه لعوامل الخلط.'}},
+ no:{q:'هل توجد مجموعة مقارنة أو علاقة بين عامل ونتيجة تريد دراستها؟',
+  yes:{q:'من أين تبدأ؟',a:'من التعرض (العامل) ثم تتبع النتيجة',b:'من النتيجة (المرض) ثم تبحث عن التعرض',c:'أقيس العامل والنتيجة في الوقت نفسه',
+   A:{r:'دراسة أترابية',e:'Cohort (استباقية أو استرجاعية) · STROBE',d:'تقيس الحدوث والخطر النسبي. الاسترجاعية من السجلات أسرع.'},
+   B:{r:'دراسة حالات وشواهد',e:'Case-control · STROBE',d:'مناسبة للأمراض النادرة. تعطي نسبة الأرجحية (Odds Ratio).'},
+   C:{r:'دراسة مقطعية تحليلية',e:'Analytical cross-sectional · STROBE',d:'سريعة وشائعة في استبيانات KAP. تبيّن الارتباط لا السببية.'}},
+  no:{q:'ماذا تريد أن تعرف؟',a:'حجم مشكلة أو انتشار أو وصف',b:'تجارب الناس ومعانيها وأسبابها',c:'جمع ما نُشر عن السؤال',
+   A:{r:'دراسة مقطعية وصفية',e:'Descriptive cross-sectional · STROBE',d:'نسبة الانتشار والوصف. حدّد حجم العينة مسبقًا.'},
+   B:{r:'بحث نوعي',e:'Qualitative (مقابلات، مجموعات تركيز) · COREQ',d:'للأسئلة التي تبدأ بـ «لماذا» و«كيف». العينة هادفة حتى التشبع.'},
+   C:{r:'مراجعة منهجية',e:'Systematic review · PRISMA',d:'سجّل البروتوكول في PROSPERO قبل البدء.'}}}};
+var trail=[];
+function drawTree(){var box=$('tree');box.innerHTML='';var n=T,path=[];
+ for(var i=0;i<trail.length;i++){var s=trail[i];path.push(s.label);n=n[s.key];}
+ if(path.length)box.appendChild(el('div','path',path.join(' ← ')));
+ if(n.r){var r=el('div','result');r.appendChild(el('b',null,n.r));r.appendChild(el('div','qe',n.e));r.lastChild.style.margin='2px 0 6px';r.appendChild(el('div',null,n.d));box.appendChild(r);}
+ else{box.appendChild(el('div','step',n.q));var row=el('div','row');
+  var opts=n.a?[[n.a,'A'],[n.b,'B'],[n.c,'C']]:[['نعم','yes'],['لا','no']];
+  opts.forEach(function(o){var b=el('button',n.a?'ghost':null,o[0]);if(n.a){b.style.textAlign='right';b.style.width='100%';}b.onclick=function(){trail.push({key:o[1],label:o[0]});drawTree();};row.appendChild(b);});box.appendChild(row);}
+ if(trail.length){var row2=el('div','row'),bk=el('button','ghost','رجوع'),rs=el('button','ghost','من البداية');bk.onclick=function(){trail.pop();drawTree();};rs.onclick=function(){trail=[];drawTree();};row2.appendChild(bk);row2.appendChild(rs);box.appendChild(row2);}}
+drawTree();
+
+/* ---------- REFERENCE (rule-based) ---------- */
+function analyse(t){
+ var doi=(t.match(/10\.\d{4,9}\/[^\s"<>,;]+/i)||[])[0];if(doi)doi=doi.replace(/[.)\]]+$/,'');
+ var years=(t.replace(/10\.\d{4,9}\/\S+/g,'').match(/\b(19[5-9]\d|20[0-4]\d)\b/g)||[]).map(Number);
+ var year=years.length?years[0]:null, now=new Date().getFullYear();
+ var vol=t.match(/;\s*(\d{1,4})\s*(\((\d{1,3})\))?\s*:\s*([eE]?\d+)(\s*[-–]\s*(\d+))?/);
+ var pmid=(t.match(/PMID:?\s*(\d{6,9})/i)||[])[1];
+ var authors=/^[^.]{2,}?\b[A-Z][a-z]+\s+[A-Z]{1,3}\b/.test(t)||/et al/i.test(t);
+ var parts=t.split(/\.\s+/);
+ var title=(parts[1]||'').trim();
+ var flags=[],miss=[],good=[];
+ if(!authors)miss.push('أسماء المؤلفين بصيغة واضحة (Surname Initials)');
+ if(!year)miss.push('سنة النشر');
+ if(!vol)miss.push('المجلد والعدد والصفحات (مثل 2021;12(3):45-52)');
+ if(!doi&&!pmid)miss.push('معرّف DOI أو PMID');
+ if(year&&year>now)flags.push('سنة النشر '+year+' في المستقبل.');
+ if(year&&year>=now-1&&!doi)flags.push('مرجع حديث جدًا بلا DOI: تحقّق منه بعناية.');
+ if(doi&&!/^10\.\d{4,9}\/\S{3,}$/.test(doi))flags.push('صيغة الـ DOI غير مكتملة.');
+ if(vol&&vol[6]&&+vol[6]<+vol[4])flags.push('رقم الصفحة الأخيرة أصغر من الأولى.');
+ if(vol&&+vol[1]>500)flags.push('رقم المجلد كبير على نحو غير معتاد ('+vol[1]+').');
+ if(/\bet al\b/i.test(t)&&!/^[^,]+,/.test(t))flags.push('«et al» بلا مؤلف أول واضح.');
+ if(title&&title.split(/\s+/).length<4)flags.push('العنوان قصير أو عام جدًا.');
+ if(doi)good.push('يحتوي على DOI');if(pmid)good.push('يحتوي على PMID');if(year)good.push('السنة '+year);
+ var risk=flags.length>=2||miss.length>=3?'مرتفعة':flags.length||miss.length?'متوسطة':'منخفضة';
+ return {doi:doi,pmid:pmid,title:title||t.slice(0,200),flags:flags,miss:miss,good:good,risk:risk};
+}
+function refLinks(a){var L=[];
+ if(a.doi)L.push(['افتح الـ DOI','https://doi.org/'+a.doi,'doi.org']);
+ if(a.pmid)L.push(['افتح في PubMed (PMID)','https://pubmed.ncbi.nlm.nih.gov/'+a.pmid+'/','pubmed']);
+ L.push(['ابحث بالعنوان في PubMed','https://pubmed.ncbi.nlm.nih.gov/?term='+encodeURIComponent(a.title),'pubmed']);
+ L.push(['ابحث في Google Scholar','https://scholar.google.com/scholar?q='+encodeURIComponent(a.title),'scholar']);
+ if(a.doi)L.push(['بيانات DOI في Crossref','https://search.crossref.org/?q='+encodeURIComponent(a.doi),'crossref']);
+ var w=el('div','links');L.forEach(function(l){var x=el('a');x.href=l[1];x.target='_blank';x.rel='noopener';x.appendChild(el('strong',null,l[0]));x.appendChild(el('span',null,l[2]+' ↗'));w.appendChild(x);});return w;}
+$('ref-go').onclick=function(){var t=$('refin').value.trim(),o=$('ref-out');o.innerHTML='';if(t.length<15)return;
+ var a=analyse(t),c=el('div','card'),cls=a.risk==='مرتفعة'?'bad':a.risk==='متوسطة'?'mid':'ok';
+ c.appendChild(el('div','verdict '+cls,'درجة الانتباه المطلوبة: '+a.risk));
+ if(a.good.length)c.appendChild(el('p','note','✓ '+a.good.join(' · ')));
+ if(a.flags.length){c.appendChild(el('h3',null,'علامات تستحق التحقق'));var u=el('ul','plain');a.flags.forEach(function(f){u.appendChild(el('li',null,f));});c.appendChild(u);}
+ if(a.miss.length){c.appendChild(el('h3',null,'عناصر لم أجدها'));var u2=el('ul','plain');a.miss.forEach(function(f){u2.appendChild(el('li',null,f));});c.appendChild(u2);}
+ if(!a.flags.length&&!a.miss.length)c.appendChild(el('p',null,'الشكل سليم. هذا لا يعني أن المرجع موجود: افتح الروابط وتأكد.'));
+ c.appendChild(el('h3',null,'تحقّق الآن'));c.appendChild(refLinks(a));o.appendChild(c);o.scrollIntoView({behavior:'smooth',block:'start'});};
+$('ref-clear').onclick=function(){$('refin').value='';$('ref-out').innerHTML='';};
+
+/* ---------- FAQ ---------- */
+var FAQ=[
+['ما الممارسة القائمة على الأدلة (EBP)؟','دمج ثلاثة أركان في القرار: أفضل دليل بحثي متاح، وخبرتك المهنية، وقيم المريض وظروفه. وتسير في خمس خطوات: اسأل، ابحث، قيّم، طبّق، راجع الأثر.'],
+['كيف أكتب سؤالًا بصيغة PICO؟','P الفئة (من؟ وأين؟)، I التدخل أو التعرض، C المقارنة، O النتيجة التي تُقاس. مثال: لدى مرضى السكري البالغين (P)، هل التذكير بالرسائل النصية (I) مقارنةً بالرعاية المعتادة (C) يرفع الحضور لفحص العين السنوي (O)؟ استخدم تبويب «سؤالي».'],
+['ما معايير FINER؟','قابل للتنفيذ (Feasible)، مثير للاهتمام (Interesting)، جديد (Novel)، أخلاقي (Ethical)، ذو صلة (Relevant). إن فشل سؤالك في معيار فعدّله قبل كتابة المقترح.'],
+['ما الفرق بين الدراسة المقطعية ودراسة الحالات والشواهد؟','المقطعية تقيس العامل والنتيجة في الوقت نفسه لعينة واحدة، وتناسب الانتشار واستبيانات KAP. الحالات والشواهد تبدأ من النتيجة: تختار مرضى (حالات) وغير مرضى (شواهد) ثم تبحث في الماضي عن التعرض، وتناسب الأمراض النادرة وتعطي نسبة الأرجحية OR.'],
+['كيف أحسب حجم العينة لاستبيان؟','لسؤال انتشار أو KAP: n = Z² × p(1−p) / d². مع ثقة 95% (Z = 1.96) ونسبة متوقعة 50% وهامش خطأ 5% تكون العينة نحو 385. إن كان المجتمع صغيرًا فطبّق تصحيح المجتمع المحدود، وأضف 10–20% لعدم الاستجابة. استخدم أداة مثل OpenEpi أو اسأل نقطة ارتكاز البحوث.'],
+['ما هيكل IMRaD؟ وما الذي يغطيه المقترح؟','المقدمة (Introduction)، المنهجية (Methods)، النتائج (Results)، المناقشة (Discussion). المقترح البحثي يغطي المقدمة والمنهجية فقط: المشكلة، السؤال، الأهداف، التصميم، العينة، الأداة، التحليل، الأخلاقيات، الخطة الزمنية.'],
+['أي إرشادات كتابة أتبع؟','STROBE للدراسات الرصدية، وCONSORT للتجارب العشوائية، وPRISMA للمراجعات المنهجية، وSTARD لدقة الاختبارات التشخيصية، وCOREQ للبحوث النوعية. تجدها كلها في موقع EQUATOR Network.'],
+['هل يجوز استخدام الذكاء الاصطناعي في بحثي؟','نعم، مع شروط: لا يكون مؤلفًا، وأفصِح عن استخدامه (الأداة، والغرض، وأين)، وتحقق من كل معلومة ومرجع يقترحه، ولا تضع بيانات مرضى في أداة عامة، واقرأ سياسة المجلة. القاعدة: مسموح أن تستخدمه، غير مسموح أن تخفيه.'],
+['كيف أكتب بيان الإفصاح عن استخدام AI؟','مثال: «استخدم المؤلفون أداة [اسم الأداة والإصدار] في [تحسين الصياغة اللغوية لقسم المقدمة]. راجع المؤلفون المحتوى وعدّلوه، ويتحملون كامل المسؤولية عن محتوى المنشور.» يوضع عادة قبل المراجع أو في قسم المنهجية حسب المجلة.'],
+['نسبة التشابه في تقريري 28%، هل هذا انتحال؟','ليس بالضرورة. افتح التقرير وانظر من أين يأتي التشابه: المراجع والاقتباسات والمصطلحات الثابتة ترفع النسبة دون انتحال. المهم: هل هناك فقرات منقولة بلا اقتباس أو توثيق؟ والنسبة المنخفضة لا تثبت الأصالة أيضًا.'],
+['هل أدوات كشف الذكاء الاصطناعي دقيقة؟','لا يُعتمد عليها وحدها. تخطئ خصوصًا مع النصوص المحرَّرة ومع من يكتب بلغة ثانية. النتيجة مؤشر يستدعي المراجعة، لا دليل إدانة. احتفظ بمسوداتك وسجل تعديلاتك.'],
+['كيف أسجّل كباحث جديد؟','عبر نموذج التسجيل (الرابط أسفل الصفحة). التسجيل مباشر ولا يحتاج موافقة.'],
+['كيف أقدّم مقترحي رسميًا؟','عبر منصة البحوث: mohcsr.gov.om/my-researches (تسجيل الدخول ثم My Researches). جهّز: المقترح كاملًا، أداة جمع البيانات، نموذج الموافقة الذاتية، والسيرة الذاتية للباحثين.'],
+['كيف أحصل على حساب MOH e-Survey؟','عبر نقطة ارتكاز البحوث بالمحافظة: أرسل الاسم والرقم الوظيفي وبريد الوزارة. واجهة الباحث: survey.moh.gov.om/admin. جرّب الاستبانة كاملة (Preview) قبل تفعيلها، ولا تعدّل الأسئلة بعد التفعيل.'],
+['ما خطتي بعد الورشة؟','خطة التسعين يومًا: خلال 30 يومًا أكمل مقترحك، وخلال 60 يومًا قدّمه على منصة البحوث، وخلال 90 يومًا ابدأ جمع البيانات. اكتب خطواتك بتواريخ، واختر زميلًا يتابعك.']];
+function norm(s){return s.replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').toLowerCase();}
+FAQ.forEach(function(f){var d=el('details','card faq');var s=el('summary',null,f[0]);d.appendChild(s);d.appendChild(el('p',null,f[1]));d.dataset.k=norm(f[0]+' '+f[1]);$('faq').appendChild(d);});
+$('faqq').addEventListener('input',function(){var q=norm(this.value.trim()),n=0;[].forEach.call($('faq').children,function(d){var ok=!q||q.split(/\s+/).every(function(w){return d.dataset.k.indexOf(w)>=0});d.hidden=!ok;if(ok)n++;if(q&&ok)d.open=true;});$('faq-none').hidden=n>0;});
+})();
+
+</script>
+</body>
+</html>
